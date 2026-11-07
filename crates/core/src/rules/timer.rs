@@ -30,6 +30,12 @@ impl Timer {
         self.left == 0
     }
 
+    /// Whole seconds left, rounded up, so it shows 1 until the last tick.
+    pub fn seconds_left(&self) -> i32 {
+        let second = super::tune::secs(1);
+        (self.left + second - 1) / second
+    }
+
     pub fn running(&self) -> bool {
         self.left > 0
     }

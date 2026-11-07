@@ -697,6 +697,8 @@ Strings written: none. The panel reuses `play.sheepdogs_win`, `play.wolves_win`,
 | R1.3003 | finding | "scale number of power ups with number of players" gave no number. | 2 Mounds a player at the start, and a new one every 240 s shared by the players: 4 players get about the old one a minute. 2 players start with 4, 8 players with 16. The map now holds 16 + 16 spots. | `MOUNDS_PER_PLAYER`, `NEW_MOUND_PLAYER_SECONDS` | person |
 | R1.3004 | finding | LOOK_UP stopped at 15 degrees, just where the ground meets the camera. | The person: "you cannot look up far enough". 40 degrees, with the camera pulled in over the ground. Not yet seen on screen. | `aim::LOOK_UP` | open |
 | R1.3005 | finding | The public history must start after the gracenote rewrite (T13, R1.521). | The public repository starts from one snapshot commit; `scripts/push-public.sh` adds one commit per deploy on top of it. Local history stays whole. | `scripts/push-public.sh` | done |
+| R1.3010 | finding | The person: "need it to have a countdown until I respawn". A killed Wolf saw only "You're out" for its 30 s wait. | The HUD message says "Back in {n}", whole seconds rounded up, while the Wolf waits; "You're out" stays for Sudden death, where it never returns. String written by me: `hud.back_in` "Back in {n}". | `death::Life::back_in`, `hud.rs`, `data/strings.json` | done |
+| R1.3011 | finding | The person kept the dances and said the Wolf's arm went through its body. | The shoulders sat inside the coat. Each moves out at the coat's edge (`shoulder_out`: Wolf 9 cm, others 4 cm), and the floss arm crosses in no more than 14 degrees. Shot from the front, side and 3/4. | `dance::shoulder_out`, `dance::floss` | done |
 
 ## Dances (R1.2900 onward)
 

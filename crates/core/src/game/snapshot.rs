@@ -117,6 +117,8 @@ pub struct Me {
     pub seat: u8,
     pub role: Role,
     pub alive: bool,
+    /// Whole seconds until a killed Wolf returns.
+    pub back_in: Option<i32>,
     pub stunned: bool,
     /// Sprint left: 0 empty, 1 full.
     pub stamina: Fx,
@@ -319,6 +321,7 @@ impl Match {
             seat: player.seat,
             role: player.role,
             alive: player.life.alive(),
+            back_in: player.life.back_in(),
             stunned: player.stun.running(),
             stamina: fx::ratio(body.stamina / (STAMINA_FULL / 3600), 3600),
             dig: player.digging.fraction().max(player.planting.fraction()),

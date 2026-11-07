@@ -99,6 +99,7 @@
   "key.left_click": "Left click",
   "key.right_click": "Right click",
   "hud.out": "You're out",
+  "hud.back_in": "Back in {n}",
   "hud.kill": "Wolf killed",
   "hud.fold_shut": "Wolves can't enter the Fold",
   "hud.click": "Click to play"

@@ -109,6 +109,7 @@ pub const KEYS: &[&str] = &[
     "key.left_click",
     "key.right_click",
     "hud.out",
+    "hud.back_in",
     "hud.kill",
     "hud.fold_shut",
     "hud.click",

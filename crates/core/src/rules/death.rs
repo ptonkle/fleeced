@@ -22,6 +22,15 @@ impl Life {
         *self == Life::Out
     }
 
+    /// Whole seconds until a killed Wolf returns, or `None` when it isn't
+    /// waiting to.
+    pub fn back_in(&self) -> Option<i32> {
+        match self {
+            Life::Returning(wait) => Some(wait.seconds_left()),
+            _ => None,
+        }
+    }
+
     /// A kill. A Wolf already dead stays as it is.
     pub fn kill(&mut self, sudden_death: bool) {
         if !self.alive() {
@@ -49,6 +58,24 @@ impl Life {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_killed_wolf_counts_whole_seconds_down_to_its_return() {
+        let mut life = Life::default();
+        assert_eq!(life.back_in(), None);
+        life.kill(false);
+        assert_eq!(life.back_in(), Some(30));
+        // one tick in, 29 s and 59 ticks are left: still 30 rounded up
+        life.tick();
+        assert_eq!(life.back_in(), Some(30));
+        for _ in 0..60 {
+            life.tick();
+        }
+        assert_eq!(life.back_in(), Some(29));
+        let mut out = Life::default();
+        out.kill(true);
+        assert_eq!(out.back_in(), None);
+    }
 
     #[test]
     fn a_killed_wolf_returns_after_thirty_seconds() {

@@ -105,12 +105,14 @@ pub fn hud(strings: &Strings, s: &Snapshot) -> Value {
                 })
             })
             .collect();
-    let message = if !s.me.alive {
-        Some("hud.out")
+    let message = if let Some(n) = s.me.back_in {
+        Some(strings.fill("hud.back_in", &[("n", n.to_string())]))
+    } else if !s.me.alive {
+        Some(strings.get("hud.out"))
     } else if s.me.at_fold {
-        Some("hud.fold_shut")
+        Some(strings.get("hud.fold_shut"))
     } else if s.view.wolf_killed && !s.me.killed {
-        Some("hud.kill")
+        Some(strings.get("hud.kill"))
     } else {
         None
     };
@@ -131,7 +133,7 @@ pub fn hud(strings: &Strings, s: &Snapshot) -> Value {
         "dig": percent(s.me.dig),
         "prompt": prompt(s).map(|key| strings.get(key)),
         "prompt_key": cap(strings, KEYS, ACT),
-        "message": message.map(|key| strings.get(key)),
+        "message": message,
         "kill": s.me.killed.then(|| strings.get("hud.kill")),
         "flash": percent(s.me.kill_flash),
         "click": strings.get("hud.click"),
@@ -299,6 +301,16 @@ mod tests {
         assert_eq!(banner["kill"], "hud.kill");
         assert!(banner["message"].is_null());
         assert_eq!(banner["flash"], 50);
+    }
+
+    #[test]
+    fn a_killed_wolf_sees_a_countdown_until_it_is_back() {
+        let mut s = game().snapshot_for(1).unwrap();
+        s.me.alive = false;
+        s.me.back_in = Some(23);
+        assert_eq!(hud(&words(), &s)["message"], "hud.back_in");
+        s.me.back_in = None;
+        assert_eq!(hud(&words(), &s)["message"], "hud.out");
     }
 
     #[test]
