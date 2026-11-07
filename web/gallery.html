@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Same policy as the game's page. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' wss://nos.lol wss://relay.ditto.pub wss://purplerelay.com wss://nostr.data.haus wss://relay.primal.net; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Fleeced: model gallery</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="gallery.css">
+</head>
+<body data-ready="false">
+  <canvas id="view"></canvas>
+  <nav id="picks" hidden></nav>
+  <p id="hint"></p>
+  <div id="labels"></div>
+  <div id="tuning" hidden></div>
+  <noscript><p>This page needs JavaScript and WebAssembly.</p></noscript>
+  <script type="module" src="gallery.js"></script>
+</body>
+</html>

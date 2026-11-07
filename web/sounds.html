@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' wss://nos.lol wss://relay.ditto.pub wss://purplerelay.com wss://nostr.data.haus wss://relay.primal.net; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Fleeced sounds</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-ready="false">
+  <main>
+    <h1 id="title"></h1>
+    <label id="volume"><span id="volume-label"></span> <input id="volume-slider" type="range" min="0" max="100" value="50"></label>
+    <div id="lists"></div>
+    <p id="message" role="status"></p>
+  </main>
+  <noscript><p>This page needs JavaScript and WebAssembly.</p></noscript>
+  <script type="module" src="sounds.js"></script>
+</body>
+</html>

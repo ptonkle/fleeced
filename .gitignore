@@ -1,0 +1,11 @@
+/target/
+/dist/
+/.venv/
+__pycache__/
+/mutants.out*/
+# screenshots go on the design journal; the PNGs are megabytes of cloth noise
+notes/shots/
+/.claude/worktrees/
+/TRIAGE.md
+/notes/audio/
+/.venv

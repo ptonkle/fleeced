@@ -1,0 +1,247 @@
+# Which check steps a change to which files needs. Read by scripts/quick_check.py.
+#
+# Each [[rule]] names the files it covers (globs, from the project's root;
+# ** crosses folders) and the steps of ./scripts/check.sh a change to them
+# must run. A changed file that no rule covers runs the whole check, and the
+# guard (quick_check.py --guard, run by check.sh) fails while any file in the
+# project is covered by no rule, so a new file gets a rule when it is added.
+# When unsure, give a file the wider rule: a quick check is only as safe as
+# its rules. ./scripts/check.sh stays the check before a handoff or a deploy.
+#
+# Steps: fmt, clippy, core, build, wasm, art, notebook, journal, browser, all.
+# After Peter's quick check in Ape Race, Honey Hole and Crabble.
+
+ignore = [".gitignore", "notes/**", ".claude/**", "LICENSE*", "README.md", "LICENSES.md", "MEASUREMENTS.md", "DECISIONS.md"]
+
+# Test tags, after Ape Race's and Chromatic's. A [[rule]] above says which check
+# steps a file needs; a rule that also names `tags` narrows the core step to the
+# cargo tests whose [tests] tags meet them (scripts/tags.py). A file no tagged
+# rule covers runs every test, so a rule with no tags stays safe, and a test
+# with no tags always runs. scripts/check.sh's tags step fails on a test with no
+# tags, so add a row below with each new module.
+
+[tags]
+all = "foundations: run everything"
+boundary = "the architecture scans of tests/boundary.rs (always run: they read every file)"
+foundation = "fx.rs, rng.rs, ticks.rs: no rule tags them, so a change to one runs everything"
+online = "the lobby and online play: lobby.rs, online.rs, online/, the transport's fence"
+page = "the app and its door: app.rs, api.rs, view.rs, dock.rs, icon.rs, the shim, web/"
+saves = "the save and its old files: save.rs, tests/saves/, the storage fence"
+notes = "the version and What's New: patch_notes.rs, data/patch-notes.json"
+copy = "reader-visible words: GLOSSARY.md, TONE.md, data/strings.json, strings.rs, glossary.rs"
+rules = "the match rules: rules/"
+map = "the map: map/, ground.rs"
+sim = "the world: world.rs, flock.rs, body.rs"
+models = "the models and the view: mesh.rs, models/, render.rs"
+sound = "the sound: sound.rs, tunes.rs"
+hillside = "the hillside's scenery: scape/"
+play = "a match on the page: scene.rs, hud.rs, game/aim.rs, web/play.js, web/hud.css, web/grass.js"
+
+# A hit tag on the left also hits the tags on the right, transitively.
+[implies]
+online = ["page"]
+saves = ["page"]
+notes = ["page"]
+copy = ["page"]
+rules = ["online", "sim"]
+map = ["sim"]
+
+# Tags whose tests always run in a quick check.
+[always]
+tags = ["boundary"]
+
+# Test id prefix -> tags. `lib:<module>` is the core's own tests, and
+# `test:<file>` an integration test file's. The longest prefix wins.
+[tests]
+"test:boundary" = ["boundary"]
+"test:copy" = ["copy"]
+"test:map_seeds" = ["map"]
+"test:old_saves" = ["saves"]
+"test:storage_fence" = ["saves"]
+"test:online_fence" = ["online"]
+"test:herding" = ["sim"]
+"test:edges" = ["sim"]
+"lib:api" = ["page"]
+"lib:app" = ["page"]
+"lib:dock" = ["page"]
+"lib:icon" = ["page"]
+"lib:playtest" = ["page"]
+"lib:view" = ["page"]
+"lib:lobby" = ["online"]
+"lib:online" = ["online"]
+"lib:save" = ["saves"]
+"lib:patch_notes" = ["notes"]
+"lib:glossary" = ["copy"]
+"lib:strings" = ["copy"]
+"lib:fx" = ["foundation"]
+"lib:rng" = ["foundation"]
+"lib:ticks" = ["foundation"]
+"lib:ground" = ["map"]
+"lib:map" = ["map"]
+"lib:rules" = ["rules"]
+"lib:game" = ["rules"]
+# named before they land, from notes/contract.md
+"lib:body" = ["sim"]
+"lib:flock" = ["sim"]
+"lib:tune" = ["sim"]
+"lib:world" = ["sim"]
+"lib:mesh" = ["models"]
+"lib:models" = ["models"]
+"lib:render" = ["models"]
+"lib:gallery" = ["models"]
+"lib:scape" = ["hillside"]
+"lib:scene" = ["play"]
+"lib:hud" = ["play"]
+"lib:sound" = ["sound"]
+"lib:tunes" = ["sound"]
+
+[[rule]]
+name = "the core and the shim"
+# every folder under src/ but rules/, which the next rule covers: a rule here
+# only ever adds steps, so a narrower rule works only if this one leaves it out
+files = ["crates/shim/**", "crates/core/Cargo.toml", "crates/core/tests/**", "tests/saves/**", "crates/core/src/*.rs", "crates/core/src/[!r]**/*", "Cargo.toml", "Cargo.lock", "rust-toolchain.toml", "rustfmt.toml", "crates/core/examples/**", "crates/core/src/render/**"]
+steps = ["fmt", "clippy", "core", "build", "wasm", "browser"]
+
+# sim (R1.100+). `crates/**` above still adds its steps: rules add up.
+[[rule]]
+name = "the sim"
+files = ["crates/core/src/world.rs", "crates/core/src/flock.rs", "crates/core/src/body.rs", "crates/core/src/tune.rs", "crates/core/src/ground.rs", "crates/core/tests/herding.rs", "crates/core/tests/edges.rs", "crates/core/tests/common/**"]
+steps = ["fmt", "clippy", "core"]
+
+[[rule]]
+name = "the sim's probes and bench"
+# run by hand; nothing in the game calls them
+files = ["crates/core/examples/**", "scripts/bench_wasm.mjs"]
+steps = ["fmt", "clippy"]
+
+[[rule]]
+name = "the match rules"
+# pure state machines tested directly, with no page in the loop
+files = ["crates/core/src/rules/**", "crates/core/src/game.rs", "crates/core/src/game/**"]
+steps = ["fmt", "clippy", "core"]
+
+[[rule]]
+name = "a match on the page"
+files = ["crates/core/src/scene.rs", "crates/core/src/hud.rs", "crates/core/src/game/aim.rs", "web/play.js", "web/hud.css", "web/grass.js"]
+steps = ["core", "build", "wasm", "browser"]
+tags = ["play", "rules"]
+
+[[rule]]
+name = "the page and its data"
+# the boundary and copy tests read web/ and data/, so the core suite runs too
+files = ["web/**", "data/**"]
+steps = ["core", "build", "wasm", "browser"]
+
+[[rule]]
+name = "the words"
+files = ["GLOSSARY.md", "TONE.md"]
+steps = ["core"]
+
+[[rule]]
+name = "the records"
+files = ["BRIEF.md", "PLAN.md", "SECOND-ORDER.md", "TRIAGE.md", "HANDOFF.md", "CLAUDE.md", "AGENTS.md", "BUILDER-SPEC.md"]
+steps = ["notebook", "journal"]
+
+[[rule]]
+name = "the journal's tools"
+files = ["tools/journal/**", "tools/playtest_readout.py", "scripts/journal_check.py"]
+steps = ["journal"]
+
+[[rule]]
+name = "the browser check"
+files = ["tests/browser/**"]
+steps = ["build", "browser"]
+
+[[rule]]
+name = "the map pictures"
+# reads the core's JSON and draws it: a tool, so nothing in the check runs it
+files = ["tools/map/**"]
+steps = []
+
+[[rule]]
+name = "the offline sound tools"
+# they print and measure; the core suite builds the dump example they read
+files = ["tools/sound/**"]
+steps = ["core"]
+
+[[rule]]
+name = "tests of the hillside"
+# scenery only: it reads the map and nothing reads it but the view
+files = ["crates/core/src/scape/**", "web/backdrop.js", "web/grass.js"]
+steps = ["core"]
+tags = ["hillside"]
+
+[[rule]]
+name = "tests of the mesh builder"
+files = ["crates/core/src/mesh.rs"]
+steps = ["core"]
+tags = ["models", "hillside"]
+
+[[rule]]
+name = "tests of the sound"
+files = ["crates/core/src/sound.rs", "crates/core/src/tunes.rs", "data/sound.json"]
+steps = ["core"]
+tags = ["sound"]
+
+[[rule]]
+name = "the breaks"
+files = ["tests/breaks.json", "scripts/break_tests.py"]
+steps = ["core"]
+tags = ["boundary"]
+
+[[rule]]
+name = "the checks themselves"
+# a change to a script that runs or builds the checks runs everything
+files = ["scripts/**", "tests/tags.toml"]
+steps = ["all"]
+
+# The narrow rules: each adds nothing to the steps above, and says which tests
+# its files reach.
+
+[[rule]]
+name = "tests of the lobby and online play"
+files = ["crates/core/src/lobby.rs", "crates/core/src/online.rs", "crates/core/src/online/**", "crates/core/tests/online_fence.rs", "web/online.js", "web/net-clock.js", "web/net/**"]
+steps = ["core"]
+tags = ["online"]
+
+[[rule]]
+name = "tests of the app and its door"
+files = ["crates/core/src/api.rs", "crates/core/src/app.rs", "crates/core/src/app/**", "crates/core/src/dock.rs", "crates/core/src/icon.rs", "crates/core/src/playtest.rs", "crates/core/src/view.rs", "crates/shim/**", "web/app.js", "web/backdrop.js", "web/grass.js", "web/index.html", "web/input.js", "web/style.css"]
+steps = ["core"]
+tags = ["page"]
+
+[[rule]]
+name = "tests of the save"
+files = ["crates/core/src/save.rs", "crates/core/tests/old_saves.rs", "crates/core/tests/storage_fence.rs", "tests/saves/**", "web/save/**"]
+steps = ["core"]
+tags = ["saves"]
+
+[[rule]]
+name = "tests of the version"
+files = ["crates/core/src/patch_notes.rs", "data/patch-notes.json"]
+steps = ["core"]
+tags = ["notes"]
+
+[[rule]]
+name = "tests of the words"
+files = ["crates/core/src/glossary.rs", "crates/core/src/strings.rs", "crates/core/tests/copy.rs", "data/strings.json", "GLOSSARY.md", "TONE.md"]
+steps = ["core"]
+tags = ["copy"]
+
+[[rule]]
+name = "tests of the match rules"
+files = ["crates/core/src/rules/**", "crates/core/src/game/bot.rs", "crates/core/src/game/bot_tests.rs"]
+steps = ["core"]
+tags = ["rules"]
+
+[[rule]]
+name = "tests of the map"
+files = ["crates/core/examples/**", "crates/core/src/ground.rs", "crates/core/src/map/**"]
+steps = ["core"]
+tags = ["map", "hillside"]
+
+[[rule]]
+name = "the boundary scans"
+files = ["crates/core/tests/boundary.rs"]
+steps = ["core"]
+tags = ["boundary"]

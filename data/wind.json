@@ -1,0 +1,11 @@
+{
+  "from_degrees": 215,
+  "bend_cm": 6,
+  "bend_full_cm": 20,
+  "waves": [
+    { "wavelength_cm": 4600, "speed_cm": 520, "share_pct": 42, "turn_degrees": 0 },
+    { "wavelength_cm": 2300, "speed_cm": 390, "share_pct": 26, "turn_degrees": 24 },
+    { "wavelength_cm": 7100, "speed_cm": 640, "share_pct": 20, "turn_degrees": -18 },
+    { "wavelength_cm": 1300, "speed_cm": 300, "share_pct": 12, "turn_degrees": 41 }
+  ]
+}

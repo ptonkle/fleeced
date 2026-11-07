@@ -1,0 +1,193 @@
+/* The match's HUD and winner's screen: dark tartan panels with a brass edge,
+   after the menus. style.css holds the cloth, the colors and the font. */
+
+#hud { position: fixed; inset: 0; z-index: 2; pointer-events: none; font-family: var(--serif); color: var(--oat); }
+#hud[hidden], #hud [hidden] { display: none; }
+
+.hud-panel {
+  position: absolute;
+  padding: 8px 14px;
+  background: linear-gradient(rgba(22, 20, 24, 0.62), rgba(22, 20, 24, 0.62)), var(--cloth), var(--peat);
+  border: 1px solid var(--brass-dark);
+  outline: 1px solid var(--line);
+  outline-offset: -4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.hud-label { font-size: 13px; letter-spacing: 0.06em; color: var(--oat-dim); }
+/* a key's small cap: dark wool with a brass edge, pressed a little from below */
+.hud-key {
+  display: inline-block;
+  padding: 0 5px;
+  font-size: 11px;
+  line-height: 15px;
+  white-space: nowrap;
+  color: var(--brass-light);
+  background: var(--peat-2);
+  border: 1px solid var(--brass-dark);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+}
+.hud-keyed { display: flex; align-items: center; gap: 6px; }
+.hud-keys { display: flex; gap: 10px; margin-top: 6px; }
+.hud-value { font-size: 19px; color: var(--brass-light); font-variant-numeric: tabular-nums; }
+
+.hud-top { top: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 20px; align-items: center; }
+.hud-time { font-size: 30px; color: var(--brass-light); font-variant-numeric: tabular-nums; min-width: 72px; text-align: center; }
+.hud-counts { display: flex; gap: 20px; }
+.hud-count { display: flex; flex-direction: column; align-items: center; min-width: 74px; }
+
+.hud-left { left: 20px; bottom: 20px; display: flex; gap: 16px; align-items: center; }
+.hud-dial-box { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.hud-dial {
+  --fill: 0;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: conic-gradient(var(--brass) calc(var(--fill) * 1%), var(--peat-2) 0);
+  border: 2px solid var(--brass-dark);
+}
+.hud-dial-value {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--peat);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.hud-dial[data-ready="on"] { background: var(--brass-light); }
+.hud-dial[data-ready="on"] .hud-dial-value { color: var(--brass-light); }
+
+.hud-stamina-box { width: 170px; }
+.hud-stamina-box .hud-keyed { justify-content: space-between; margin-bottom: 3px; }
+.hud-bar { height: 10px; background: var(--peat-2); border: 1px solid var(--brass-dark); }
+.hud-fill { --fill: 0; height: 100%; width: calc(var(--fill) * 1%); background: var(--moss-light); }
+
+.hud-power { right: 20px; bottom: 20px; display: flex; gap: 12px; align-items: center; min-width: 190px; }
+.hud-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brass-light);
+  border: 2px solid var(--brass-dark);
+}
+.hud-mark img { width: 36px; height: 36px; display: block; }
+.hud-power-name { font-size: 18px; color: var(--brass-light); margin-bottom: 4px; }
+.hud-meter { width: 120px; height: 6px; }
+.hud-meter .hud-fill { background: var(--brass); }
+
+.hud-effects { right: 20px; bottom: 116px; display: flex; gap: 12px; }
+.hud-effect { width: 44px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.hud-effect img { width: 32px; height: 32px; display: block; }
+.hud-effect .hud-meter { width: 100%; }
+
+/* the spyglass: a round view, black past its rim */
+body[data-scoped="on"] #hud::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 42vh, rgba(0, 0, 0, 0.55) 43vh, #000 46vh);
+}
+
+/* Zoomies: speed lines rushing past, clear in the middle */
+body[data-zoomies="on"] #hud::after {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 244, 200, 0.35) 0deg 0.5deg, transparent 0.5deg 5deg);
+  -webkit-mask-image: radial-gradient(circle at center, transparent 30vh, #000 70vh);
+  mask-image: radial-gradient(circle at center, transparent 30vh, #000 70vh);
+  box-shadow: inset 0 0 22vh rgba(230, 170, 40, 0.75);
+  animation: zoomies-rush 0.16s steps(3) infinite;
+}
+@keyframes zoomies-rush {
+  to { transform: rotate(5deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-zoomies="on"] #hud::after { animation: none; }
+}
+
+/* a small ring, light with a dark edge, to read on grass and on fleece */
+.hud-cross {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin: -5px 0 0 -5px;
+  border: 1.5px solid var(--oat);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55);
+}
+.hud-cross[data-on="on"] { background: var(--oat); }
+.hud-prompt {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 22px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 10px;
+  font-size: 17px;
+  color: var(--brass-light);
+  background: rgba(22, 20, 24, 0.72);
+}
+.hud-dig { position: absolute; left: 50%; top: calc(50% + 54px); width: 120px; margin-left: -60px; height: 8px; }
+.hud-dig .hud-fill { background: var(--brass-light); }
+.hud-message {
+  position: absolute;
+  left: 50%;
+  top: 24%;
+  transform: translateX(-50%);
+  padding: 6px 16px;
+  font-size: 22px;
+  color: var(--oat);
+  background: rgba(22, 20, 24, 0.8);
+  border: 1px solid var(--brass-dark);
+}
+.hud-kill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 22%;
+  padding: 14px 0;
+  text-align: center;
+  font-size: 84px;
+  letter-spacing: 0.04em;
+  color: var(--brass-light);
+  background: rgba(22, 20, 24, 0.82);
+  border-top: 2px solid var(--brass);
+  border-bottom: 2px solid var(--brass);
+}
+.hud-flash { --fill: 0; position: absolute; inset: 0; background: var(--oat); opacity: calc(var(--fill) * 0.006); }
+.hud-click {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 40%;
+  transform: translateX(-50%);
+  padding: 6px 16px;
+  font-size: 22px;
+  color: var(--brass-light);
+  background: rgba(22, 20, 24, 0.8);
+}
+body[data-capture="on"]:not([data-engaged="on"]) .hud-click { display: block; }
+
+/* the play panel: Leave while the mouse is free. The state line is for the
+   online check, off the screen but still on the page. */
+body[data-screen="play"] #menus { z-index: 3; }
+body[data-screen="play"][data-engaged="on"] .panel.play { display: none; }
+body[data-screen="play"] [id="state"] { position: fixed; left: 0; top: 0; width: 2px; height: 2px; overflow: hidden; opacity: 0.01; }
+body[data-screen="play"] [id="play.count"] { position: fixed; left: 50%; top: 30%; transform: translateX(-50%); font-size: 34px; color: var(--brass-light); }
