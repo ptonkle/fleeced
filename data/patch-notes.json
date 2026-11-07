@@ -1,5 +1,12 @@
 [
   {
+    "version": "0.1.4",
+    "date": "2026-11-07",
+    "notes": [
+      "Fixed the winners standing still instead of dancing."
+    ]
+  },
+  {
     "version": "0.1.3",
     "date": "2026-11-07",
     "notes": [

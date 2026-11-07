@@ -338,9 +338,11 @@ impl Backdrop {
         self.stage.cheer.then_some(HEADING + TURN / 2)
     }
 
-    /// The clock a winning team moves by: none in a still scene.
+    /// The clock a winning team dances by. Under reduced motion the camera
+    /// holds but the winners still dance, as the lineup still spins: the
+    /// person saw a static pose there (R1.3012).
     pub fn win_clock(&self) -> Option<u32> {
-        (!self.still).then_some(self.clock)
+        Some(if self.still { self.spin } else { self.clock })
     }
 
     /// The page's word on what is on screen, as JSON; anything else is
@@ -687,12 +689,49 @@ mod tests {
     }
 
     #[test]
-    fn with_reduced_motion_a_winning_team_has_no_clock() {
-        let mut h = Hillside::backdrop();
-        h.set_stage(&winners_stage(3, 1920, 1080));
-        assert_eq!(h.scene().unwrap().win_clock(), Some(0));
-        h.set_still(true);
-        assert_eq!(h.scene().unwrap().win_clock(), None);
+    fn with_reduced_motion_a_winning_team_still_dances() {
+        let hill = Hillside::backdrop();
+        let field = &hill.scape().field;
+        let mut scene = Backdrop::new(field);
+        scene.set_still(true, field);
+        scene.advance(5, field);
+        assert_eq!(scene.win_clock(), Some(5));
+    }
+
+    /// The winning team as drawn, a second apart, past the rise.
+    fn winners_move(still: bool) -> bool {
+        let hill = Hillside::backdrop();
+        let (field, lib) = (&hill.scape().field, hill.library());
+        let mut scene = Backdrop::new(field);
+        scene.set_still(still, field);
+        scene.set_stage(&winners_stage(3, 1920, 1080), field);
+        let drawn = |scene: &Backdrop| {
+            let mut b = lib.batch();
+            let facing = scene.cheering().unwrap();
+            crate::models::cheering(
+                &mut b,
+                lib,
+                scene.stands(),
+                V3::default(),
+                scene.win_clock(),
+                facing,
+            );
+            b.finish(&lib.ranges).0
+        };
+        for _ in 0..180 {
+            scene.advance(1, field);
+        }
+        let before = drawn(&scene);
+        for _ in 0..60 {
+            scene.advance(1, field);
+        }
+        before != drawn(&scene)
+    }
+
+    #[test]
+    fn the_winners_dance_on_screen_with_and_without_reduced_motion() {
+        assert!(winners_move(false));
+        assert!(winners_move(true));
     }
 
     #[test]

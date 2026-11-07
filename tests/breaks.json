@@ -5684,11 +5684,11 @@
     "test": "the_lineup_stands_on_the_same_open_ground_as_the_winners"
   },
   {
-    "name": "win: reduced motion stops the clock",
+    "name": "win: reduced motion stops the dancing",
     "file": "crates/core/src/scape/backdrop.rs",
-    "find": "(!self.still).then_some(self.clock)",
+    "find": "Some(if self.still { self.spin } else { self.clock })",
     "replace": "Some(self.clock)",
-    "test": "with_reduced_motion_a_winning_team_has_no_clock"
+    "test": "with_reduced_motion_a_winning_team_still_dances"
   },
   {
     "name": "win: seven stand in two rows",
@@ -5850,5 +5850,12 @@
     "find": "    let message = if let Some(n) = s.me.back_in {",
     "replace": "    let message = if let Some(n) = s.me.back_in.filter(|_| false) {",
     "test": "a_killed_wolf_sees_a_countdown_until_it_is_back"
+  },
+  {
+    "name": "win: a still scene's winners hold one pose",
+    "file": "crates/core/src/scape/backdrop.rs",
+    "find": "Some(if self.still { self.spin } else { self.clock })",
+    "replace": "(!self.still).then_some(self.clock)",
+    "test": "the_winners_dance_on_screen_with_and_without_reduced_motion"
   }
 ]
