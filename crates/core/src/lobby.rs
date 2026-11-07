@@ -286,6 +286,13 @@ impl Lobby {
         self.settings.map_size = size;
     }
 
+    /// Every match setting back to its default, with Number of sheep and
+    /// Eats required filled for the teams as they stand.
+    pub fn reset_settings(&mut self) {
+        self.settings = Settings::default();
+        self.refill();
+    }
+
     /// Whether the seats can make at least one of each team, with each
     /// Random seat free to be either.
     pub fn teams_can_form(&self) -> bool {
@@ -386,6 +393,32 @@ mod tests {
         l.set_bot(5, true, Role::Wolf);
         assert_eq!((l.settings.sheep, l.settings.eats_required), (150, 16));
         l.set_bot(5, false, Role::Wolf);
+        assert_eq!((l.settings.sheep, l.settings.eats_required), (80, 9));
+    }
+
+    #[test]
+    fn defaults_puts_every_setting_back_and_fills_for_the_teams() {
+        let mut l = people(3);
+        l.set_role(1, Role::Wolf);
+        l.set_role(2, Role::Wolf);
+        l.set_sheep(123);
+        l.set_eats(40);
+        l.set_minutes(3);
+        l.set_map_size(MapSize::Small);
+        l.set_powerups(!tune::POWERUPS_ON);
+        l.set_sudden_death(!tune::SUDDEN_DEATH);
+        l.reset_settings();
+        let s = l.settings;
+        // two Wolves: 100 + 50 sheep and 8 eats each
+        assert_eq!((s.sheep, s.eats_required), (150, 16));
+        assert_eq!(s.match_minutes, tune::MATCH_MINUTES);
+        assert_eq!(s.map_size, MapSize::Big);
+        assert_eq!(
+            (s.powerups, s.sudden_death),
+            (tune::POWERUPS_ON, tune::SUDDEN_DEATH)
+        );
+        // and it refills again as teams change, as it did before any typing
+        l.set_role(2, Role::Sheepdog);
         assert_eq!((l.settings.sheep, l.settings.eats_required), (80, 9));
     }
 

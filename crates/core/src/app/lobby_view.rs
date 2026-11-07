@@ -238,6 +238,9 @@ impl App {
             self.switch("lobby.powerups", s.powerups, !host),
             self.switch("lobby.sudden", s.sudden_death, !host),
         ];
+        if host {
+            items.push(self.quiet("lobby.defaults", "lobby.defaults"));
+        }
         if room.kind != Kind::Solo {
             items.push(Item::Text {
                 id: "lobby.name".into(),

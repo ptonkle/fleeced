@@ -5857,5 +5857,19 @@
     "find": "Some(if self.still { self.spin } else { self.clock })",
     "replace": "(!self.still).then_some(self.clock)",
     "test": "the_winners_dance_on_screen_with_and_without_reduced_motion"
+  },
+  {
+    "name": "defaults: typed numbers stay typed",
+    "file": "crates/core/src/lobby.rs",
+    "find": "        self.settings = Settings::default();\n        self.refill();",
+    "replace": "        self.settings.match_minutes = Settings::default().match_minutes;\n        self.refill();",
+    "test": "defaults_puts_every_setting_back_and_fills_for_the_teams"
+  },
+  {
+    "name": "defaults: filled for one Wolf",
+    "file": "crates/core/src/lobby.rs",
+    "find": "        self.settings = Settings::default();\n        self.refill();",
+    "replace": "        self.settings = Settings::default();",
+    "test": "defaults_puts_every_setting_back_and_fills_for_the_teams"
   }
 ]

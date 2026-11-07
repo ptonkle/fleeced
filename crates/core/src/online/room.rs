@@ -674,6 +674,10 @@ impl Room {
                 let size = MapSize::parse(value).ok_or_else(|| format!("Unknown Map size \"{value}\"."))?;
                 self.lobby.set_map_size(size);
             }
+            "lobby.defaults" => {
+                self.host_only(name)?;
+                self.lobby.reset_settings();
+            }
             other => return self.seat_act(other, value),
         }
         Ok(())

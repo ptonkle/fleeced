@@ -71,6 +71,7 @@ pub const KEYS: &[&str] = &[
     "lobby.eats",
     "lobby.powerups",
     "lobby.sudden",
+    "lobby.defaults",
     "lobby.map_size",
     "map_size.small",
     "map_size.medium",
