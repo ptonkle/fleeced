@@ -206,7 +206,10 @@ mod tests {
     use super::*;
     use crate::strings::tests::sample;
 
-    const NOTES: &str = r#"[{"version": "0.1.0", "date": "2026-11-06", "notes": ["A."]}]"#;
+    fn notes() -> String {
+        let version = crate::app::VERSION;
+        format!(r#"[{{"version": "{version}", "date": "2026-11-06", "notes": ["A."]}}]"#)
+    }
     const GLOSSARY: &str = "### Fold\n\nWhere the sheep go.\n";
 
     fn json(text: &str) -> serde_json::Value {
@@ -215,7 +218,7 @@ mod tests {
 
     #[test]
     fn a_new_game_opens_on_the_title_with_its_hints() {
-        let v = json(&Game::new(&sample(), NOTES, GLOSSARY).ui());
+        let v = json(&Game::new(&sample(), &notes(), GLOSSARY).ui());
         assert_eq!(v["ok"]["screen"], "title");
         assert_eq!(v["ok"]["hints"][0]["term"], "Fold");
         assert_eq!(v["ok"]["hints"][0]["definition"], "Where the sheep go.");
@@ -223,26 +226,26 @@ mod tests {
 
     #[test]
     fn a_bad_strings_file_comes_back_in_error() {
-        let v = json(&Game::new("{}", NOTES, "").ui());
+        let v = json(&Game::new("{}", &notes(), "").ui());
         assert_eq!(v["error"], "The strings file has no \"title\".");
     }
 
     #[test]
     fn a_bad_glossary_comes_back_in_error() {
-        let v = json(&Game::new(&sample(), NOTES, "### Fold\n").ui());
+        let v = json(&Game::new(&sample(), &notes(), "### Fold\n").ui());
         assert_eq!(v["error"], "The glossary entry \"Fold\" has no definition.");
     }
 
     #[test]
     fn act_goes_through_the_one_door() {
-        let mut g = Game::new(&sample(), NOTES, "");
+        let mut g = Game::new(&sample(), &notes(), "");
         let v = json(&g.act("menu.settings", ""));
         assert_eq!(v["ok"]["screen"], "settings");
     }
 
     #[test]
     fn act_refuses_an_unknown_action_in_error() {
-        let mut g = Game::new(&sample(), NOTES, "");
+        let mut g = Game::new(&sample(), &notes(), "");
         let v = json(&g.act("screen.jump", "start"));
         assert_eq!(v["error"], "Unknown action \"screen.jump\".");
     }

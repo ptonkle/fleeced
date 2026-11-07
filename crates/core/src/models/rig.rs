@@ -15,6 +15,7 @@
 use crate::fx::{self, div, mul, sin, ONE, TURN};
 use crate::render::geom::{atan2, cm, deg, mm, smooth, v3, Affine, V3};
 
+use super::dance::{self, Dance};
 use super::hiding::{Hiding, HIDING};
 
 pub const BONE_COUNT: usize = 23;
@@ -80,10 +81,14 @@ pub enum Clip {
     Cheer,
     /// a win: a Wolf's head low over what it ate, ears back, teeth showing
     Gloat,
+    /// up onto the hind legs, ready to dance
+    Rise,
+    /// a winner on its hind legs: `dance.rs`
+    Dance(Dance),
 }
 
 impl Clip {
-    pub const ALL: [Clip; 13] = [
+    pub const ALL: [Clip; 22] = [
         Clip::Idle,
         Clip::Graze,
         Clip::Walk,
@@ -97,6 +102,15 @@ impl Clip {
         Clip::Howl,
         Clip::Cheer,
         Clip::Gloat,
+        Clip::Rise,
+        Clip::Dance(Dance::ALL[0]),
+        Clip::Dance(Dance::ALL[1]),
+        Clip::Dance(Dance::ALL[2]),
+        Clip::Dance(Dance::ALL[3]),
+        Clip::Dance(Dance::ALL[4]),
+        Clip::Dance(Dance::ALL[5]),
+        Clip::Dance(Dance::ALL[6]),
+        Clip::Dance(Dance::ALL[7]),
     ];
 
     /// Rows of the table one cycle spans.
@@ -106,12 +120,14 @@ impl Clip {
             Clip::Jump | Clip::Snap | Clip::Dig | Clip::Howl => 12,
             Clip::Walk | Clip::Run | Clip::Stalk | Clip::Drift => 16,
             Clip::Cheer | Clip::Gloat => 24,
+            Clip::Rise => dance::RISE_STEPS,
+            Clip::Dance(_) => dance::DANCE_STEPS,
         }
     }
 
     /// Whether the clip repeats; a clip that does not holds its end.
     pub const fn loops(self) -> bool {
-        !matches!(self, Clip::Jump | Clip::Snap | Clip::Howl)
+        !matches!(self, Clip::Jump | Clip::Snap | Clip::Howl | Clip::Rise)
     }
 
     /// Ticks one cycle of a clip takes when feet do not set its pace.
@@ -126,6 +142,8 @@ impl Clip {
             Clip::Walk | Clip::Run | Clip::Stalk | Clip::Drift => 60,
             Clip::Cheer => 44,
             Clip::Gloat => 200,
+            Clip::Rise => dance::RISE_TICKS,
+            Clip::Dance(d) => d.ticks(),
         }
     }
 
@@ -409,7 +427,7 @@ const SLOW_FEET: [i32; 4] = [c(25), c(75), 0, c(50)];
 const WOLF_SHOULDER: i32 = 80;
 
 /// A body's size, for scaling a clip's bounce to the animal.
-fn scale_of(rig: Rig) -> i32 {
+pub(super) fn scale_of(rig: Rig) -> i32 {
     match rig {
         Rig::Sheep => ONE,
         Rig::Lamb => cm(62),
@@ -672,6 +690,8 @@ fn stance(h: &Hiding, rig: Rig, clip: Clip, t: i32) -> Stance {
             s.tail = [-deg(18), deg(2), deg(2)];
             s.wag = mul(deg(5), wave(t, 2, 0));
         }
+        // these pose every bone themselves: see `dance.rs`
+        Clip::Rise | Clip::Dance(_) => {}
     }
     if rig == Rig::Wolf && matches!(clip, Clip::Idle | Clip::Walk | Clip::Run) {
         s.neck += deg(h.carry);
@@ -686,22 +706,22 @@ fn turned(p: (i32, i32), a: i32) -> (i32, i32) {
     (mul(s, p.1) + mul(co, p.0), mul(co, p.1) - mul(s, p.0))
 }
 
-fn sub(a: (i32, i32), b: (i32, i32)) -> (i32, i32) {
+pub(super) fn sub(a: (i32, i32), b: (i32, i32)) -> (i32, i32) {
     (a.0 - b.0, a.1 - b.1)
 }
 
-fn long(p: (i32, i32)) -> i32 {
+pub(super) fn long(p: (i32, i32)) -> i32 {
     fx::length(p.0, p.1)
 }
 
 /// The rotation about x that takes the direction `from` to `to`.
-fn angle_between(from: (i32, i32), to: (i32, i32)) -> i32 {
+pub(super) fn angle_between(from: (i32, i32), to: (i32, i32)) -> i32 {
     atan2(from.1, from.0) - atan2(to.1, to.0)
 }
 
 /// The two-bone solve in the side view: where the knee goes for a hip and an
 /// ankle, bending to the side `side` says.
-fn solve(hip: (i32, i32), ankle: (i32, i32), upper: i32, lower: i32, side: i32) -> (i32, i32) {
+pub(super) fn solve(hip: (i32, i32), ankle: (i32, i32), upper: i32, lower: i32, side: i32) -> (i32, i32) {
     let to = sub(ankle, hip);
     let reach = long(to).clamp((upper - lower).abs() + mm(2), upper + lower - mm(2));
     let dir = {
@@ -764,6 +784,9 @@ pub fn pose(rig: Rig, clip: Clip, t: i32) -> [Affine; BONE_COUNT] {
 
 /// Every bone's matrix for one moment, with a hiding table of its own.
 pub fn pose_with(h: &Hiding, rig: Rig, clip: Clip, t: i32) -> [Affine; BONE_COUNT] {
+    if let Some(bones) = dance::pose(h, rig, clip, t) {
+        return bones;
+    }
     let sk = fitted(h, rig);
     let s = stance(h, rig, clip, t);
     let mut m = [Affine::IDENTITY; BONE_COUNT];
@@ -838,6 +861,11 @@ impl PoseTable {
         t.push_row(&[Affine::IDENTITY; BONE_COUNT]);
         for rig in Rig::ALL {
             for clip in Clip::ALL {
+                // nothing with wool dances, so its rows are not spent
+                if matches!(clip, Clip::Rise | Clip::Dance(_)) && !matches!(rig, Rig::Dog | Rig::Wolf) {
+                    t.first.push(0);
+                    continue;
+                }
                 t.first.push(t.rows);
                 // one more row than steps: a blend across the end of a loop
                 // reads the first moment again
@@ -901,6 +929,18 @@ impl Walker {
             was: clip,
             was_phase: phase,
             blend: 0,
+        }
+    }
+
+    /// A moment part way through a change of clip: `blend` of `was` still
+    /// shows.
+    pub const fn blended(clip: Clip, phase: i32, was: Clip, was_phase: i32, blend: i32) -> Walker {
+        Walker {
+            clip,
+            phase,
+            was,
+            was_phase,
+            blend,
         }
     }
 

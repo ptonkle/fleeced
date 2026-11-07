@@ -4,11 +4,13 @@ use crate::online::room::CODE_LEN;
 use crate::online::{encode, Msg, PROTOCOL};
 use crate::strings::tests::sample;
 
-const NOTES: &str = r#"[{"version": "0.1.0", "date": "2026-11-06", "notes": ["A."]}]"#;
+fn notes() -> String {
+    format!(r#"[{{"version": "{VERSION}", "date": "2026-11-06", "notes": ["A."]}}]"#)
+}
 const GLOSSARY: &str = "### Fold\n\nWhere the sheep go.\n";
 
 fn app() -> App {
-    App::new(&sample(), NOTES, GLOSSARY).unwrap()
+    App::new(&sample(), &notes(), GLOSSARY).unwrap()
 }
 
 /// Every control id on the screen, in order, by walking the panels' JSON.

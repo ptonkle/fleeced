@@ -5766,5 +5766,14 @@
     "find": "(mm(-10)..mm(150)).contains(&along)",
     "replace": "(mm(0)..mm(0)).contains(&along)",
     "test": "nothing_grows_over_a_wolfs_eyes"
-  }
+  },
+  {"name": "dance: feet pushed under the ground", "file": "crates/core/src/models/dance.rs", "find": "shape.foot.1 + size(f.lift),", "replace": "shape.foot.1 + size(f.lift) - cm(20),", "test": "no_clip_takes_a_dancer_through_the_ground_or_off_it"},
+  {"name": "dance: the body barely rises", "file": "crates/core/src/models/dance.rs", "find": "const LEAN: i32 = deg(80);", "replace": "const LEAN: i32 = deg(20);", "test": "a_dancer_stands_up_on_its_hind_legs_over_its_spot"},
+  {"name": "dance: rising starts already turned", "file": "crates/core/src/models/dance.rs", "find": "smooth(0, ONE, t))),", "replace": "ONE / 2 + smooth(0, ONE, t) / 2)),", "test": "rising_starts_from_the_animal_at_rest"},
+  {"name": "dance: the last key never returns to the first", "file": "crates/core/src/models/dance.rs", "find": "keys[(i + 1) % keys.len()]", "replace": "keys[(i + 1).min(keys.len() - 1)]", "test": "every_dance_comes_back_round_without_a_jump"},
+  {"name": "dance: every seat the same", "file": "crates/core/src/models/dance.rs", "find": "let at = k as u32 + start + spell * SKIP;", "replace": "let at = start + spell * SKIP;", "test": "a_full_team_shows_many_dances_and_no_neighbors_match"},
+  {"name": "dance: a seat lands on its neighbor's last dance", "file": "crates/core/src/models/dance.rs", "find": "const SKIP: u32 = 3;", "replace": "const SKIP: u32 = 1;", "test": "a_full_team_shows_many_dances_and_no_neighbors_match"},
+  {"name": "dance: a lone winner stays on one", "file": "crates/core/src/models/dance.rs", "find": "let at = k as u32 + start + spell * SKIP;", "replace": "let at = k as u32 + start + spell * 4;", "test": "a_lone_winner_gets_through_all_eight"},
+  {"name": "dance: a still scene holds a different moment", "file": "crates/core/src/models/dance.rs", "find": "return Walker::new(Clip::Dance(dance), dance.held());", "replace": "return Walker::new(Clip::Dance(dance), 0);", "test": "a_still_scene_holds_a_dance"},
+  {"name": "dance: sheep spend dance rows", "file": "crates/core/src/models/rig.rs", "find": "                    t.first.push(0);\n                    continue;\n", "replace": "", "test": "dances_have_rows_for_dancers_and_none_for_sheep"}
 ]

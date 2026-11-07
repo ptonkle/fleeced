@@ -8,6 +8,7 @@
 //! Whatever decides whether a Wolf can hide is one table, `hiding.rs`.
 
 pub mod canine;
+pub mod dance;
 pub mod hiding;
 pub mod props;
 pub mod rig;
@@ -443,9 +444,15 @@ pub fn cheering(b: &mut Batch, lib: &Library, stands: &[Stand], eye: V3, ticks: 
     for (k, s) in stands.iter().enumerate() {
         let k = k as i32;
         let rig = s.model.rig();
-        let turn = win_turn(rig, k);
-        let clip = win_clip(s.model, k);
-        let phase = win_phase(rig, clip, k, ticks);
+        let (turn, walker) = if dance::ON {
+            (win_turn(Rig::Wolf, k) / 2, dance::walker(rig, k, ticks))
+        } else {
+            let clip = win_clip(s.model, k);
+            (
+                win_turn(rig, k),
+                Walker::new(clip, win_phase(rig, clip, k, ticks)),
+            )
+        };
         push_animal(
             b,
             eye,
@@ -455,14 +462,14 @@ pub fn cheering(b: &mut Batch, lib: &Library, stands: &[Stand], eye: V3, ticks: 
                 yaw: facing + turn,
                 up: V3::UP,
                 size: ONE,
-                pose: Walker::new(clip, phase).pose(rig, &lib.poses),
+                pose: walker.pose(rig, &lib.poses),
                 coat: s.coat,
                 skin: s.skin,
                 outline: None,
                 bell: false,
             },
         );
-        if clip == Clip::Gloat {
+        if walker.clip == Clip::Gloat {
             let (x, z) = (fx::sin(facing + turn), fx::cos(facing + turn));
             let at = s.at.add(v3(mul(x, cm(100)), mm(5), mul(z, cm(100))));
             let place = render::stand(at, k * TURN / 7, V3::UP, ONE);

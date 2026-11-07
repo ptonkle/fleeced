@@ -1,5 +1,19 @@
 [
   {
+    "version": "0.1.2",
+    "date": "2026-11-07",
+    "notes": [
+      "Fixed the Wolf's arms going through its coat while dancing."
+    ]
+  },
+  {
+    "version": "0.1.1",
+    "date": "2026-11-07",
+    "notes": [
+      "The winning team now dances."
+    ]
+  },
+  {
     "version": "0.1.0",
     "date": "2026-11-07",
     "notes": [

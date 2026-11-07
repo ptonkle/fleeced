@@ -21,6 +21,7 @@ use serde_json::json;
 
 use crate::fx::{self, from_int, mul, ONE, TURN};
 use crate::mesh::Rgb;
+use crate::models::dance::Dance;
 use crate::models::hiding::{Hiding, HIDING};
 use crate::models::rig::{Clip, Walker};
 use crate::models::sheep::{coat_of, noise, size_of, COATS};
@@ -41,7 +42,7 @@ const MODELS: [(&str, Model); 8] = [
     ("plinth", Model::Plinth),
 ];
 
-const CLIPS: [(&str, Clip); 13] = [
+const CLIPS: [(&str, Clip); 22] = [
     ("idle", Clip::Idle),
     ("graze", Clip::Graze),
     ("walk", Clip::Walk),
@@ -55,6 +56,15 @@ const CLIPS: [(&str, Clip); 13] = [
     ("howl", Clip::Howl),
     ("cheer", Clip::Cheer),
     ("gloat", Clip::Gloat),
+    ("rise", Clip::Rise),
+    ("disco", Clip::Dance(Dance::Disco)),
+    ("robot", Clip::Dance(Dance::Robot)),
+    ("twist", Clip::Dance(Dance::Twist)),
+    ("running-man", Clip::Dance(Dance::RunningMan)),
+    ("sprinkler", Clip::Dance(Dance::Sprinkler)),
+    ("letters", Clip::Dance(Dance::Letters)),
+    ("floss", Clip::Dance(Dance::Floss)),
+    ("chicken", Clip::Dance(Dance::Chicken)),
 ];
 
 const SCENES: [&str; 9] = [
