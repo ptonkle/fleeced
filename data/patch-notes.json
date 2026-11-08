@@ -1,0 +1,72 @@
+[
+  {
+    "version": "0.2.0",
+    "date": "2026-11-08",
+    "notes": [
+      "New Sheepdog powerup: Decoy sheep, replacing Super jump.",
+      "New Wolf powerup: Frenzy."
+    ]
+  },
+  {
+    "version": "0.1.7",
+    "date": "2026-11-08",
+    "notes": [
+      "Ready is a button at the bottom of the lobby.",
+      "Set your name beside your seat.",
+      "Defaults is a checkbox, and the map size follows the number of players.",
+      "Nameplates over your teammates."
+    ]
+  },
+  {
+    "version": "0.1.6",
+    "date": "2026-11-08",
+    "notes": [
+      "A killed Wolf is back in 10 seconds.",
+      "Computer Sheepdogs can no longer see an invisible Wolf.",
+      "Computer Sheepdogs are fooled by the Sheep suit.",
+      "Teammates have a blue outline, the other team orange."
+    ]
+  },
+  {
+    "version": "0.1.5",
+    "date": "2026-11-07",
+    "notes": [
+      "New Defaults button in the lobby puts the match settings back."
+    ]
+  },
+  {
+    "version": "0.1.4",
+    "date": "2026-11-07",
+    "notes": [
+      "Fixed the winners standing still instead of dancing."
+    ]
+  },
+  {
+    "version": "0.1.3",
+    "date": "2026-11-07",
+    "notes": [
+      "A killed Wolf now sees a countdown until it's back."
+    ]
+  },
+  {
+    "version": "0.1.2",
+    "date": "2026-11-07",
+    "notes": [
+      "Fixed the Wolf's arms going through its coat while dancing."
+    ]
+  },
+  {
+    "version": "0.1.1",
+    "date": "2026-11-07",
+    "notes": [
+      "The winning team now dances."
+    ]
+  },
+  {
+    "version": "0.1.0",
+    "date": "2026-11-07",
+    "notes": [
+      "First version."
+    ]
+  }
+]

@@ -1,0 +1,2755 @@
+{
+ "_note": "Every sound in the game. There are no audio files: the core compiles these recipes (crates/core/src/sound.rs) and the page's synth (web/audio.js) or tools/sound/render.py plays them. Frequencies in Hz, times in ms, gains 0 to 1, filter q and gain as Web Audio takes them, wobble in cents.",
+ "silence": 0.001,
+ "pipes": {
+  "_about": "A Great Highland Bagpipe. Low A sits at 476 Hz, within the 470 to 480 Hz of modern chanters. The ratios to low A are Macpherson's table (The Pitch and Scale of the Great Highland Bagpipe, 1998): just D at 4:3, harmonic high G at 7:4, low G at 7:8. High A is 15 cents under the octave, where he measured pipers setting it.",
+  "low_a_hz": 476,
+  "scale": {
+   "lg": [
+    7,
+    8
+   ],
+   "la": [
+    1,
+    1
+   ],
+   "b": [
+    9,
+    8
+   ],
+   "c": [
+    5,
+    4
+   ],
+   "d": [
+    4,
+    3
+   ],
+   "e": [
+    3,
+    2
+   ],
+   "f": [
+    5,
+    3
+   ],
+   "hg": [
+    7,
+    4
+   ],
+   "ha": [
+    1991,
+    1000
+   ]
+  },
+  "chanter": {
+   "gain": 0.085,
+   "harmonics": [
+    1.0,
+    0.807,
+    0.711,
+    0.651,
+    0.607,
+    0.574,
+    0.547,
+    0.525,
+    0.506,
+    0.49,
+    0.476,
+    0.463,
+    0.452,
+    0.441,
+    0.432,
+    0.423,
+    0.415,
+    0.408,
+    0.401,
+    0.395,
+    0.389,
+    0.384,
+    0.378,
+    0.373,
+    0.369,
+    0.364,
+    0.36,
+    0.356,
+    0.352,
+    0.348,
+    0.345,
+    0.342,
+    0.338,
+    0.335,
+    0.332,
+    0.329
+   ],
+   "filters": [
+    {
+     "type": "peaking",
+     "freq": 1144,
+     "q": 1.38,
+     "gain": 10.5
+    },
+    {
+     "type": "peaking",
+     "freq": 2217,
+     "q": 3.67,
+     "gain": 9.1
+    },
+    {
+     "type": "peaking",
+     "freq": 1436,
+     "q": 4.95,
+     "gain": -12.7
+    },
+    {
+     "type": "peaking",
+     "freq": 3258,
+     "q": 6.34,
+     "gain": -24.9
+    },
+    {
+     "type": "highshelf",
+     "freq": 3600,
+     "gain": -8
+    },
+    {
+     "type": "lowpass",
+     "freq": 5600,
+     "q": -3
+    }
+   ],
+   "wobble": [
+    {
+     "rate": 0.31,
+     "cents": 3
+    },
+    {
+     "rate": 1.1,
+     "cents": 2
+    },
+    {
+     "rate": 5.3,
+     "cents": 0.8
+    }
+   ],
+   "_about": "The filter chain is fitted to a real solo piper's partials on six notes (4.5 dB rms over 84 partials): a peak near 1.1 kHz, a peak near 2.2 kHz, a cliff near 3.2 kHz, and a thin plateau above it."
+  },
+  "drones": [
+   {
+    "_about": "tenor",
+    "below_low_a": 2,
+    "gain": 0.026,
+    "cents": 0,
+    "harmonics": [
+     1.0,
+     0.241,
+     0.372,
+     0.129,
+     0.235,
+     0.09,
+     0.174,
+     0.069,
+     0.138,
+     0.057,
+     0.116,
+     0.048,
+     0.099,
+     0.042,
+     0.087,
+     0.037,
+     0.078,
+     0.033,
+     0.071,
+     0.03,
+     0.065,
+     0.028,
+     0.059,
+     0.026,
+     0.055,
+     0.024,
+     0.051,
+     0.022,
+     0.048,
+     0.021
+    ],
+    "filters": [
+     {
+      "type": "lowpass",
+      "freq": 3400,
+      "q": -3
+     }
+    ],
+    "wobble": [
+     {
+      "rate": 0.23,
+      "cents": 1.2
+     }
+    ]
+   },
+   {
+    "_about": "tenor, a hair sharp so the two beat slowly",
+    "below_low_a": 2,
+    "gain": 0.026,
+    "cents": 1.6,
+    "at_ms": 25,
+    "harmonics": [
+     1.0,
+     0.241,
+     0.372,
+     0.129,
+     0.235,
+     0.09,
+     0.174,
+     0.069,
+     0.138,
+     0.057,
+     0.116,
+     0.048,
+     0.099,
+     0.042,
+     0.087,
+     0.037,
+     0.078,
+     0.033,
+     0.071,
+     0.03,
+     0.065,
+     0.028,
+     0.059,
+     0.026,
+     0.055,
+     0.024,
+     0.051,
+     0.022,
+     0.048,
+     0.021
+    ],
+    "filters": [
+     {
+      "type": "lowpass",
+      "freq": 3400,
+      "q": -3
+     }
+    ],
+    "wobble": [
+     {
+      "rate": 0.17,
+      "cents": 1.2
+     }
+    ]
+   },
+   {
+    "_about": "bass",
+    "below_low_a": 4,
+    "gain": 0.03,
+    "cents": -0.8,
+    "at_ms": 70,
+    "harmonics": [
+     1.0,
+     0.316,
+     0.415,
+     0.181,
+     0.276,
+     0.131,
+     0.211,
+     0.104,
+     0.172,
+     0.087,
+     0.147,
+     0.075,
+     0.128,
+     0.067,
+     0.115,
+     0.06,
+     0.104,
+     0.054,
+     0.095,
+     0.05,
+     0.088,
+     0.046,
+     0.081,
+     0.043,
+     0.076,
+     0.041,
+     0.072,
+     0.038,
+     0.068,
+     0.036,
+     0.064,
+     0.034,
+     0.061,
+     0.033,
+     0.058,
+     0.031,
+     0.056,
+     0.03,
+     0.053,
+     0.029,
+     0.051,
+     0.028,
+     0.049,
+     0.027
+    ],
+    "filters": [
+     {
+      "type": "lowpass",
+      "freq": 2600,
+      "q": -3
+     }
+    ],
+    "wobble": [
+     {
+      "rate": 0.13,
+      "cents": 1.0
+     }
+    ]
+   }
+  ],
+  "strike": {
+   "_about": "How the pipes start and stop. The drones hit flat and rise as the bag fills, the chanter joins on E, and the tune starts.",
+   "attack_ms": 90,
+   "rise_ms": 420,
+   "flat_cents": 90,
+   "chanter_at_ms": 1000,
+   "chanter_flat_cents": 45,
+   "chanter_rise_ms": 70,
+   "tune_at_ms": 2200,
+   "cut_ms": 60,
+   "die_ms": 420,
+   "sag_cents": 60
+  },
+  "echo": {
+   "_about": "A little of the hillside.",
+   "taps": [
+    {
+     "ms": 97,
+     "gain": 0.13
+    },
+    {
+     "ms": 163,
+     "gain": 0.09
+    },
+    {
+     "ms": 251,
+     "gain": 0.05
+    }
+   ],
+   "filter_hz": 2600,
+   "tail_ms": 400,
+   "filter_q": -3
+  }
+ },
+ "tunes": [
+  {
+   "id": "scotland_the_brave",
+   "label": "Scotland the Brave",
+   "beat_ms": 600,
+   "grace_ms": 26,
+   "last_note_ms": 1500,
+   "strains": [
+    "opening",
+    "close"
+   ]
+  },
+  {
+   "id": "flowers_of_the_forest",
+   "label": "Flowers of the Forest",
+   "beat_ms": 940,
+   "grace_ms": 40,
+   "last_note_ms": 2200,
+   "strains": [
+    "opening"
+   ]
+  }
+ ],
+ "cues": [
+  {
+   "id": "sheep_baa_1",
+   "label": "Sheep baa 1",
+   "_about": "A bleat: a sawtooth throat through three vowel bands with a fast quaver in pitch and level.",
+   "group": "sheep_baa",
+   "reach": "flock",
+   "pitch_spread": 0.1,
+   "layers": [
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 262,
+     "to_freq": 226,
+     "attack_ms": 25,
+     "hold_ms": 460,
+     "release_ms": 120,
+     "gain": 0.42,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 720,
+       "q": 3.2,
+       "to_freq": 850
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 9.5,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 9.5,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 262,
+     "to_freq": 226,
+     "attack_ms": 25,
+     "hold_ms": 460,
+     "release_ms": 120,
+     "gain": 0.231,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1750,
+       "q": 5,
+       "to_freq": 1890
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 9.5,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 9.5,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 262,
+     "to_freq": 226,
+     "attack_ms": 25,
+     "hold_ms": 460,
+     "release_ms": 120,
+     "gain": 0.109,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 2650,
+       "q": 7
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 9.5,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 9.5,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 30,
+     "hold_ms": 460,
+     "release_ms": 100,
+     "gain": 0.042,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1750,
+       "q": 1.2
+      }
+     ],
+     "throb": [
+      {
+       "rate": 9.5,
+       "depth": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sheep_baa_2",
+   "label": "Sheep baa 2",
+   "group": "sheep_baa",
+   "reach": "flock",
+   "pitch_spread": 0.1,
+   "layers": [
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 236,
+     "to_freq": 205,
+     "attack_ms": 25,
+     "hold_ms": 620,
+     "release_ms": 120,
+     "gain": 0.42,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 660,
+       "q": 3.2,
+       "to_freq": 779
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 8.4,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 8.4,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 236,
+     "to_freq": 205,
+     "attack_ms": 25,
+     "hold_ms": 620,
+     "release_ms": 120,
+     "gain": 0.231,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1620,
+       "q": 5,
+       "to_freq": 1750
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 8.4,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 8.4,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 236,
+     "to_freq": 205,
+     "attack_ms": 25,
+     "hold_ms": 620,
+     "release_ms": 120,
+     "gain": 0.109,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 2500,
+       "q": 7
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 8.4,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 8.4,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 30,
+     "hold_ms": 620,
+     "release_ms": 100,
+     "gain": 0.05,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1620,
+       "q": 1.2
+      }
+     ],
+     "throb": [
+      {
+       "rate": 8.4,
+       "depth": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sheep_baa_3",
+   "label": "Sheep baa 3",
+   "group": "sheep_baa",
+   "reach": "flock",
+   "pitch_spread": 0.1,
+   "layers": [
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 288,
+     "to_freq": 240,
+     "attack_ms": 25,
+     "hold_ms": 380,
+     "release_ms": 120,
+     "gain": 0.4,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 780,
+       "q": 3.2,
+       "to_freq": 920
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 11,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 11,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 288,
+     "to_freq": 240,
+     "attack_ms": 25,
+     "hold_ms": 380,
+     "release_ms": 120,
+     "gain": 0.22,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1880,
+       "q": 5,
+       "to_freq": 2030
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 11,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 11,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 288,
+     "to_freq": 240,
+     "attack_ms": 25,
+     "hold_ms": 380,
+     "release_ms": 120,
+     "gain": 0.104,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 2750,
+       "q": 7
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 11,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 11,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 30,
+     "hold_ms": 380,
+     "release_ms": 100,
+     "gain": 0.04,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1880,
+       "q": 1.2
+      }
+     ],
+     "throb": [
+      {
+       "rate": 11,
+       "depth": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sheep_baa_4",
+   "label": "Sheep baa 4",
+   "group": "sheep_baa",
+   "reach": "flock",
+   "pitch_spread": 0.1,
+   "layers": [
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 218,
+     "to_freq": 196,
+     "attack_ms": 25,
+     "hold_ms": 760,
+     "release_ms": 120,
+     "gain": 0.42,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 620,
+       "q": 3.2,
+       "to_freq": 732
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 7.6,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 7.6,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 218,
+     "to_freq": 196,
+     "attack_ms": 25,
+     "hold_ms": 760,
+     "release_ms": 120,
+     "gain": 0.231,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1520,
+       "q": 5,
+       "to_freq": 1642
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 7.6,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 7.6,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 218,
+     "to_freq": 196,
+     "attack_ms": 25,
+     "hold_ms": 760,
+     "release_ms": 120,
+     "gain": 0.109,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 2420,
+       "q": 7
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 7.6,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 7.6,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 30,
+     "hold_ms": 760,
+     "release_ms": 100,
+     "gain": 0.059,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1520,
+       "q": 1.2
+      }
+     ],
+     "throb": [
+      {
+       "rate": 7.6,
+       "depth": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lamb_baa_1",
+   "label": "Lamb baa 1",
+   "group": "lamb_baa",
+   "reach": "flock",
+   "pitch_spread": 0.12,
+   "layers": [
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 512,
+     "to_freq": 455,
+     "attack_ms": 25,
+     "hold_ms": 300,
+     "release_ms": 120,
+     "gain": 0.32,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 980,
+       "q": 3.2,
+       "to_freq": 1156
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 13,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 13,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 512,
+     "to_freq": 455,
+     "attack_ms": 25,
+     "hold_ms": 300,
+     "release_ms": 120,
+     "gain": 0.176,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 2300,
+       "q": 5,
+       "to_freq": 2484
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 13,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 13,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 512,
+     "to_freq": 455,
+     "attack_ms": 25,
+     "hold_ms": 300,
+     "release_ms": 120,
+     "gain": 0.083,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 3300,
+       "q": 7
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 13,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 13,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 30,
+     "hold_ms": 300,
+     "release_ms": 100,
+     "gain": 0.026,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 2300,
+       "q": 1.2
+      }
+     ],
+     "throb": [
+      {
+       "rate": 13,
+       "depth": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lamb_baa_2",
+   "label": "Lamb baa 2",
+   "group": "lamb_baa",
+   "reach": "flock",
+   "pitch_spread": 0.12,
+   "layers": [
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 575,
+     "to_freq": 498,
+     "attack_ms": 25,
+     "hold_ms": 240,
+     "release_ms": 120,
+     "gain": 0.32,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1080,
+       "q": 3.2,
+       "to_freq": 1274
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 14.5,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 14.5,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 575,
+     "to_freq": 498,
+     "attack_ms": 25,
+     "hold_ms": 240,
+     "release_ms": 120,
+     "gain": 0.176,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 2450,
+       "q": 5,
+       "to_freq": 2646
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 14.5,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 14.5,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 575,
+     "to_freq": 498,
+     "attack_ms": 25,
+     "hold_ms": 240,
+     "release_ms": 120,
+     "gain": 0.083,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 3400,
+       "q": 7
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 14.5,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 14.5,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 30,
+     "hold_ms": 240,
+     "release_ms": 100,
+     "gain": 0.026,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 2450,
+       "q": 1.2
+      }
+     ],
+     "throb": [
+      {
+       "rate": 14.5,
+       "depth": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "lamb_baa_3",
+   "label": "Lamb baa 3",
+   "group": "lamb_baa",
+   "reach": "flock",
+   "pitch_spread": 0.12,
+   "layers": [
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 468,
+     "to_freq": 430,
+     "attack_ms": 25,
+     "hold_ms": 400,
+     "release_ms": 120,
+     "gain": 0.32,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 940,
+       "q": 3.2,
+       "to_freq": 1109
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 11.5,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 11.5,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 468,
+     "to_freq": 430,
+     "attack_ms": 25,
+     "hold_ms": 400,
+     "release_ms": 120,
+     "gain": 0.176,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 2200,
+       "q": 5,
+       "to_freq": 2376
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 11.5,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 11.5,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 0,
+     "freq": 468,
+     "to_freq": 430,
+     "attack_ms": 25,
+     "hold_ms": 400,
+     "release_ms": 120,
+     "gain": 0.083,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 3200,
+       "q": 7
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 11.5,
+       "cents": 38
+      }
+     ],
+     "throb": [
+      {
+       "rate": 11.5,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 30,
+     "hold_ms": 400,
+     "release_ms": 100,
+     "gain": 0.032,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 2200,
+       "q": 1.2
+      }
+     ],
+     "throb": [
+      {
+       "rate": 11.5,
+       "depth": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "hooves",
+   "label": "Hooves on grass",
+   "_about": "A loop: its level follows how many sheep are moving nearby.",
+   "reach": "flock",
+   "loop": true,
+   "layers": [
+    {
+     "wave": "noise",
+     "gain": 0.3,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 380,
+       "q": 0.9
+      }
+     ],
+     "throb": [
+      {
+       "rate": 7.3,
+       "depth": 0.62
+      },
+      {
+       "rate": 11.1,
+       "depth": 0.4
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "gain": 0.05,
+     "filters": [
+      {
+       "type": "highpass",
+       "freq": 2400,
+       "q": -3
+      },
+      {
+       "type": "lowpass",
+       "freq": 6000,
+       "q": -3
+      }
+     ],
+     "throb": [
+      {
+       "rate": 5.2,
+       "depth": 0.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "step_run",
+   "label": "Running step",
+   "group": "step",
+   "reach": "close",
+   "pitch_spread": 0.1,
+   "layers": [
+    {
+     "wave": "sine",
+     "freq": 118,
+     "to_freq": 66,
+     "attack_ms": 2,
+     "hold_ms": 12,
+     "release_ms": 70,
+     "gain": 0.3
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 2,
+     "hold_ms": 14,
+     "release_ms": 50,
+     "gain": 0.09,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1100,
+       "q": 0.8
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "step_sprint",
+   "label": "Sprinting step",
+   "group": "step_fast",
+   "reach": "close",
+   "pitch_spread": 0.1,
+   "layers": [
+    {
+     "wave": "sine",
+     "freq": 142,
+     "to_freq": 72,
+     "attack_ms": 1,
+     "hold_ms": 10,
+     "release_ms": 62,
+     "gain": 0.4
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 1,
+     "hold_ms": 18,
+     "release_ms": 66,
+     "gain": 0.15,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1500,
+       "q": 0.7
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "panting",
+   "label": "Panting",
+   "_about": "One breath in and out.",
+   "group": "pant",
+   "reach": "close",
+   "pitch_spread": 0.08,
+   "layers": [
+    {
+     "wave": "noise",
+     "attack_ms": 34,
+     "hold_ms": 56,
+     "release_ms": 50,
+     "gain": 0.325,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1500,
+       "q": 1.6
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "at_ms": 170,
+     "attack_ms": 26,
+     "hold_ms": 44,
+     "release_ms": 60,
+     "gain": 0.25,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1050,
+       "q": 1.8
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sheepdog_bark_1",
+   "label": "Sheepdog bark 1",
+   "_about": "A sharp attack falling fast: one woof.",
+   "group": "sheepdog_bark",
+   "reach": "voice",
+   "pitch_spread": 0.06,
+   "layers": [
+    {
+     "wave": "sawtooth",
+     "freq": 640,
+     "to_freq": 300,
+     "glide_ms": 120,
+     "attack_ms": 3,
+     "hold_ms": 80,
+     "release_ms": 70,
+     "gain": 0.78,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 950,
+       "q": 1.5
+      },
+      {
+       "type": "lowpass",
+       "freq": 3200,
+       "q": -3
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "freq": 320,
+     "to_freq": 150,
+     "glide_ms": 120,
+     "attack_ms": 3,
+     "hold_ms": 70,
+     "release_ms": 60,
+     "gain": 0.51,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 480,
+       "q": 1.2
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 1,
+     "hold_ms": 26,
+     "release_ms": 50,
+     "gain": 0.3,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1800,
+       "q": 0.8
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sheepdog_bark_2",
+   "label": "Sheepdog bark 2",
+   "group": "sheepdog_bark",
+   "reach": "voice",
+   "pitch_spread": 0.06,
+   "layers": [
+    {
+     "wave": "sawtooth",
+     "freq": 720,
+     "to_freq": 330,
+     "glide_ms": 100,
+     "attack_ms": 3,
+     "hold_ms": 64,
+     "release_ms": 64,
+     "gain": 0.78,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1080,
+       "q": 1.5
+      },
+      {
+       "type": "lowpass",
+       "freq": 3500,
+       "q": -3
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "freq": 360,
+     "to_freq": 165,
+     "glide_ms": 100,
+     "attack_ms": 3,
+     "hold_ms": 58,
+     "release_ms": 54,
+     "gain": 0.48,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 520,
+       "q": 1.2
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 1,
+     "hold_ms": 22,
+     "release_ms": 46,
+     "gain": 0.3,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 2000,
+       "q": 0.8
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wolf_howl",
+   "label": "Wolf howl",
+   "_about": "A long open vowel: up to a held peak, then a long fall.",
+   "reach": "map",
+   "track": true,
+   "layers": [
+    {
+     "wave": "sawtooth",
+     "freq": 300,
+     "bends": [
+      [
+       420,
+       455
+      ],
+      [
+       1500,
+       500
+      ],
+      [
+       2500,
+       425
+      ],
+      [
+       3300,
+       330
+      ]
+     ],
+     "attack_ms": 240,
+     "hold_ms": 2800,
+     "release_ms": 560,
+     "gain": 0.36,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 780,
+       "q": 2.2,
+       "to_freq": 980
+      },
+      {
+       "type": "lowpass",
+       "freq": 2200,
+       "q": -3
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 4.6,
+       "cents": 13
+      }
+     ]
+    },
+    {
+     "wave": "sine",
+     "freq": 300,
+     "bends": [
+      [
+       420,
+       455
+      ],
+      [
+       1500,
+       500
+      ],
+      [
+       2500,
+       425
+      ],
+      [
+       3300,
+       330
+      ]
+     ],
+     "attack_ms": 240,
+     "hold_ms": 2800,
+     "release_ms": 560,
+     "gain": 0.24,
+     "wobble": [
+      {
+       "rate": 4.6,
+       "cents": 13
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 300,
+     "hold_ms": 2500,
+     "release_ms": 600,
+     "gain": 0.03,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1400,
+       "q": 1.4
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "wolf_eat",
+   "label": "Wolf eats a sheep",
+   "_about": "A cut-off bleat, then three bites.",
+   "reach": "voice",
+   "layers": [
+    {
+     "wave": "sawtooth",
+     "freq": 520,
+     "to_freq": 300,
+     "attack_ms": 4,
+     "hold_ms": 90,
+     "release_ms": 60,
+     "gain": 0.3,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1250,
+       "q": 3
+      }
+     ],
+     "throb": [
+      {
+       "rate": 21,
+       "depth": 0.7
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "at_ms": 60,
+     "attack_ms": 2,
+     "hold_ms": 30,
+     "release_ms": 44,
+     "gain": 0.34,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1700,
+       "q": 1.1
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "at_ms": 190,
+     "attack_ms": 2,
+     "hold_ms": 26,
+     "release_ms": 44,
+     "gain": 0.3,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1300,
+       "q": 1.1
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "at_ms": 330,
+     "attack_ms": 2,
+     "hold_ms": 34,
+     "release_ms": 60,
+     "gain": 0.26,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 950,
+       "q": 1.1
+      }
+     ]
+    },
+    {
+     "wave": "sine",
+     "at_ms": 60,
+     "freq": 150,
+     "to_freq": 70,
+     "attack_ms": 2,
+     "hold_ms": 34,
+     "release_ms": 90,
+     "gain": 0.34
+    }
+   ]
+  },
+  {
+   "id": "lunge_hit",
+   "label": "Lunge hit",
+   "_about": "A snap, a thud, and a falling yelp.",
+   "reach": "voice",
+   "layers": [
+    {
+     "wave": "noise",
+     "attack_ms": 1,
+     "hold_ms": 16,
+     "release_ms": 36,
+     "gain": 0.34,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 2300,
+       "q": 1
+      }
+     ]
+    },
+    {
+     "wave": "sine",
+     "freq": 170,
+     "to_freq": 62,
+     "attack_ms": 1,
+     "hold_ms": 26,
+     "release_ms": 120,
+     "gain": 0.5
+    },
+    {
+     "wave": "sawtooth",
+     "at_ms": 34,
+     "freq": 1040,
+     "to_freq": 430,
+     "attack_ms": 5,
+     "hold_ms": 170,
+     "release_ms": 120,
+     "gain": 0.34,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1250,
+       "q": 2
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 16,
+       "cents": 42
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "powerup_found",
+   "label": "Powerup found",
+   "layers": [
+    {
+     "wave": "triangle",
+     "freq": 784,
+     "attack_ms": 3,
+     "hold_ms": 50,
+     "release_ms": 110,
+     "gain": 0.28
+    },
+    {
+     "wave": "triangle",
+     "at_ms": 80,
+     "freq": 1175,
+     "attack_ms": 3,
+     "hold_ms": 70,
+     "release_ms": 260,
+     "gain": 0.3
+    },
+    {
+     "wave": "sine",
+     "at_ms": 80,
+     "freq": 2350,
+     "attack_ms": 3,
+     "hold_ms": 40,
+     "release_ms": 200,
+     "gain": 0.1
+    }
+   ]
+  },
+  {
+   "id": "powerup_activate",
+   "label": "Powerup activate",
+   "layers": [
+    {
+     "wave": "square",
+     "freq": 330,
+     "to_freq": 990,
+     "attack_ms": 8,
+     "hold_ms": 190,
+     "release_ms": 120,
+     "gain": 0.16,
+     "filters": [
+      {
+       "type": "lowpass",
+       "freq": 2600,
+       "q": -3
+      }
+     ]
+    },
+    {
+     "wave": "sine",
+     "freq": 660,
+     "to_freq": 1980,
+     "attack_ms": 8,
+     "hold_ms": 190,
+     "release_ms": 180,
+     "gain": 0.2
+    },
+    {
+     "wave": "noise",
+     "attack_ms": 60,
+     "hold_ms": 120,
+     "release_ms": 100,
+     "gain": 0.06,
+     "filters": [
+      {
+       "type": "highpass",
+       "freq": 3000,
+       "q": -3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dig",
+   "label": "Digging a Mound",
+   "_about": "Three scrapes of earth.",
+   "reach": "close",
+   "pitch_spread": 0.08,
+   "layers": [
+    {
+     "wave": "noise",
+     "attack_ms": 8,
+     "hold_ms": 40,
+     "release_ms": 70,
+     "gain": 0.3,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 820,
+       "q": 1.3,
+       "to_freq": 520
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "at_ms": 150,
+     "attack_ms": 8,
+     "hold_ms": 34,
+     "release_ms": 60,
+     "gain": 0.26,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 980,
+       "q": 1.3,
+       "to_freq": 600
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "at_ms": 290,
+     "attack_ms": 8,
+     "hold_ms": 46,
+     "release_ms": 80,
+     "gain": 0.3,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 740,
+       "q": 1.3,
+       "to_freq": 480
+      }
+     ]
+    },
+    {
+     "wave": "sine",
+     "freq": 96,
+     "to_freq": 70,
+     "attack_ms": 3,
+     "hold_ms": 20,
+     "release_ms": 60,
+     "gain": 0.16
+    }
+   ]
+  },
+  {
+   "id": "tunnel_in",
+   "label": "Tunnel in",
+   "_about": "A rush of earth falling away.",
+   "reach": "voice",
+   "layers": [
+    {
+     "wave": "noise",
+     "attack_ms": 20,
+     "hold_ms": 120,
+     "release_ms": 220,
+     "gain": 0.3,
+     "filters": [
+      {
+       "type": "lowpass",
+       "freq": 2400,
+       "q": -3,
+       "to_freq": 240
+      }
+     ]
+    },
+    {
+     "wave": "sine",
+     "freq": 210,
+     "to_freq": 58,
+     "attack_ms": 6,
+     "hold_ms": 100,
+     "release_ms": 180,
+     "gain": 0.32
+    }
+   ]
+  },
+  {
+   "id": "tunnel_out",
+   "label": "Tunnel out",
+   "_about": "The same rush rising.",
+   "reach": "voice",
+   "layers": [
+    {
+     "wave": "noise",
+     "attack_ms": 90,
+     "hold_ms": 90,
+     "release_ms": 170,
+     "gain": 0.3,
+     "filters": [
+      {
+       "type": "lowpass",
+       "freq": 300,
+       "q": -3,
+       "to_freq": 2800
+      }
+     ]
+    },
+    {
+     "wave": "sine",
+     "freq": 70,
+     "to_freq": 230,
+     "attack_ms": 60,
+     "hold_ms": 100,
+     "release_ms": 140,
+     "gain": 0.3
+    }
+   ]
+  },
+  {
+   "id": "click",
+   "label": "Click",
+   "layers": [
+    {
+     "wave": "triangle",
+     "freq": 1500,
+     "to_freq": 950,
+     "attack_ms": 1,
+     "hold_ms": 6,
+     "release_ms": 34,
+     "gain": 0.22,
+     "filters": [
+      {
+       "type": "lowpass",
+       "freq": 5000,
+       "q": -3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sheep_bell",
+   "label": "Bell",
+   "_about": "One ring of about ten seconds: a brass bell shaken, then settling.",
+   "reach": "map",
+   "track": true,
+   "layers": [
+    {
+     "wave": "sine",
+     "freq": 812,
+     "gain": 0.27,
+     "strikes": [
+      [
+       0,
+       1.0
+      ],
+      [
+       270,
+       0.8
+      ],
+      [
+       640,
+       0.92
+      ],
+      [
+       930,
+       0.72
+      ],
+      [
+       1320,
+       0.9
+      ],
+      [
+       1700,
+       0.74
+      ],
+      [
+       2010,
+       0.86
+      ],
+      [
+       2440,
+       0.7
+      ],
+      [
+       2830,
+       0.84
+      ],
+      [
+       3160,
+       0.68
+      ],
+      [
+       3610,
+       0.82
+      ],
+      [
+       4020,
+       0.66
+      ],
+      [
+       4380,
+       0.78
+      ],
+      [
+       4860,
+       0.62
+      ],
+      [
+       5290,
+       0.74
+      ],
+      [
+       5760,
+       0.6
+      ],
+      [
+       6180,
+       0.68
+      ],
+      [
+       6720,
+       0.54
+      ],
+      [
+       7210,
+       0.6
+      ],
+      [
+       7790,
+       0.46
+      ],
+      [
+       8380,
+       0.48
+      ],
+      [
+       9040,
+       0.34
+      ],
+      [
+       9720,
+       0.24
+      ]
+     ],
+     "ring_ms": 900,
+     "tail_ms": 1400
+    },
+    {
+     "wave": "sine",
+     "freq": 1888,
+     "gain": 0.2,
+     "strikes": [
+      [
+       0,
+       1.0
+      ],
+      [
+       270,
+       0.8
+      ],
+      [
+       640,
+       0.92
+      ],
+      [
+       930,
+       0.72
+      ],
+      [
+       1320,
+       0.9
+      ],
+      [
+       1700,
+       0.74
+      ],
+      [
+       2010,
+       0.86
+      ],
+      [
+       2440,
+       0.7
+      ],
+      [
+       2830,
+       0.84
+      ],
+      [
+       3160,
+       0.68
+      ],
+      [
+       3610,
+       0.82
+      ],
+      [
+       4020,
+       0.66
+      ],
+      [
+       4380,
+       0.78
+      ],
+      [
+       4860,
+       0.62
+      ],
+      [
+       5290,
+       0.74
+      ],
+      [
+       5760,
+       0.6
+      ],
+      [
+       6180,
+       0.68
+      ],
+      [
+       6720,
+       0.54
+      ],
+      [
+       7210,
+       0.6
+      ],
+      [
+       7790,
+       0.46
+      ],
+      [
+       8380,
+       0.48
+      ],
+      [
+       9040,
+       0.34
+      ],
+      [
+       9720,
+       0.24
+      ]
+     ],
+     "ring_ms": 620,
+     "tail_ms": 1400
+    },
+    {
+     "wave": "sine",
+     "freq": 2642,
+     "gain": 0.17,
+     "strikes": [
+      [
+       0,
+       1.0
+      ],
+      [
+       270,
+       0.8
+      ],
+      [
+       640,
+       0.92
+      ],
+      [
+       930,
+       0.72
+      ],
+      [
+       1320,
+       0.9
+      ],
+      [
+       1700,
+       0.74
+      ],
+      [
+       2010,
+       0.86
+      ],
+      [
+       2440,
+       0.7
+      ],
+      [
+       2830,
+       0.84
+      ],
+      [
+       3160,
+       0.68
+      ],
+      [
+       3610,
+       0.82
+      ],
+      [
+       4020,
+       0.66
+      ],
+      [
+       4380,
+       0.78
+      ],
+      [
+       4860,
+       0.62
+      ],
+      [
+       5290,
+       0.74
+      ],
+      [
+       5760,
+       0.6
+      ],
+      [
+       6180,
+       0.68
+      ],
+      [
+       6720,
+       0.54
+      ],
+      [
+       7210,
+       0.6
+      ],
+      [
+       7790,
+       0.46
+      ],
+      [
+       8380,
+       0.48
+      ],
+      [
+       9040,
+       0.34
+      ],
+      [
+       9720,
+       0.24
+      ]
+     ],
+     "ring_ms": 460,
+     "tail_ms": 1400
+    },
+    {
+     "wave": "sine",
+     "freq": 3921,
+     "gain": 0.12,
+     "strikes": [
+      [
+       0,
+       1.0
+      ],
+      [
+       270,
+       0.8
+      ],
+      [
+       640,
+       0.92
+      ],
+      [
+       930,
+       0.72
+      ],
+      [
+       1320,
+       0.9
+      ],
+      [
+       1700,
+       0.74
+      ],
+      [
+       2010,
+       0.86
+      ],
+      [
+       2440,
+       0.7
+      ],
+      [
+       2830,
+       0.84
+      ],
+      [
+       3160,
+       0.68
+      ],
+      [
+       3610,
+       0.82
+      ],
+      [
+       4020,
+       0.66
+      ],
+      [
+       4380,
+       0.78
+      ],
+      [
+       4860,
+       0.62
+      ],
+      [
+       5290,
+       0.74
+      ],
+      [
+       5760,
+       0.6
+      ],
+      [
+       6180,
+       0.68
+      ],
+      [
+       6720,
+       0.54
+      ],
+      [
+       7210,
+       0.6
+      ],
+      [
+       7790,
+       0.46
+      ],
+      [
+       8380,
+       0.48
+      ],
+      [
+       9040,
+       0.34
+      ],
+      [
+       9720,
+       0.24
+      ]
+     ],
+     "ring_ms": 300,
+     "tail_ms": 1400
+    },
+    {
+     "wave": "sine",
+     "freq": 5388,
+     "gain": 0.07,
+     "strikes": [
+      [
+       0,
+       1.0
+      ],
+      [
+       270,
+       0.8
+      ],
+      [
+       640,
+       0.92
+      ],
+      [
+       930,
+       0.72
+      ],
+      [
+       1320,
+       0.9
+      ],
+      [
+       1700,
+       0.74
+      ],
+      [
+       2010,
+       0.86
+      ],
+      [
+       2440,
+       0.7
+      ],
+      [
+       2830,
+       0.84
+      ],
+      [
+       3160,
+       0.68
+      ],
+      [
+       3610,
+       0.82
+      ],
+      [
+       4020,
+       0.66
+      ],
+      [
+       4380,
+       0.78
+      ],
+      [
+       4860,
+       0.62
+      ],
+      [
+       5290,
+       0.74
+      ],
+      [
+       5760,
+       0.6
+      ],
+      [
+       6180,
+       0.68
+      ],
+      [
+       6720,
+       0.54
+      ],
+      [
+       7210,
+       0.6
+      ],
+      [
+       7790,
+       0.46
+      ],
+      [
+       8380,
+       0.48
+      ],
+      [
+       9040,
+       0.34
+      ],
+      [
+       9720,
+       0.24
+      ]
+     ],
+     "ring_ms": 190,
+     "tail_ms": 1400
+    },
+    {
+     "wave": "noise",
+     "gain": 0.2,
+     "strikes": [
+      [
+       0,
+       1.0
+      ],
+      [
+       270,
+       0.8
+      ],
+      [
+       640,
+       0.92
+      ],
+      [
+       930,
+       0.72
+      ],
+      [
+       1320,
+       0.9
+      ],
+      [
+       1700,
+       0.74
+      ],
+      [
+       2010,
+       0.86
+      ],
+      [
+       2440,
+       0.7
+      ],
+      [
+       2830,
+       0.84
+      ],
+      [
+       3160,
+       0.68
+      ],
+      [
+       3610,
+       0.82
+      ],
+      [
+       4020,
+       0.66
+      ],
+      [
+       4380,
+       0.78
+      ],
+      [
+       4860,
+       0.62
+      ],
+      [
+       5290,
+       0.74
+      ],
+      [
+       5760,
+       0.6
+      ],
+      [
+       6180,
+       0.68
+      ],
+      [
+       6720,
+       0.54
+      ],
+      [
+       7210,
+       0.6
+      ],
+      [
+       7790,
+       0.46
+      ],
+      [
+       8380,
+       0.48
+      ],
+      [
+       9040,
+       0.34
+      ],
+      [
+       9720,
+       0.24
+      ]
+     ],
+     "ring_ms": 7,
+     "tail_ms": 60,
+     "filters": [
+      {
+       "type": "highpass",
+       "freq": 2600,
+       "q": -3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "stampede",
+   "label": "Stampede",
+   "_about": "A low snarl, then a rush of hooves.",
+   "reach": "map",
+   "track": true,
+   "layers": [
+    {
+     "wave": "sawtooth",
+     "freq": 104,
+     "to_freq": 74,
+     "attack_ms": 70,
+     "hold_ms": 560,
+     "release_ms": 180,
+     "gain": 0.3,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 460,
+       "q": 1.3
+      }
+     ],
+     "throb": [
+      {
+       "rate": 31,
+       "depth": 0.85
+      }
+     ],
+     "wobble": [
+      {
+       "rate": 13,
+       "cents": 40
+      }
+     ]
+    },
+    {
+     "wave": "sawtooth",
+     "freq": 53,
+     "to_freq": 38,
+     "attack_ms": 70,
+     "hold_ms": 560,
+     "release_ms": 180,
+     "gain": 0.24,
+     "filters": [
+      {
+       "type": "lowpass",
+       "freq": 300,
+       "q": -3
+      }
+     ],
+     "throb": [
+      {
+       "rate": 31,
+       "depth": 0.85
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "at_ms": 560,
+     "attack_ms": 520,
+     "hold_ms": 1700,
+     "release_ms": 1300,
+     "gain": 0.36,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 360,
+       "q": 0.8
+      }
+     ],
+     "throb": [
+      {
+       "rate": 13.1,
+       "depth": 0.72
+      },
+      {
+       "rate": 9.3,
+       "depth": 0.5
+      }
+     ]
+    },
+    {
+     "wave": "noise",
+     "at_ms": 620,
+     "attack_ms": 520,
+     "hold_ms": 1600,
+     "release_ms": 1200,
+     "gain": 0.096,
+     "filters": [
+      {
+       "type": "bandpass",
+       "freq": 1500,
+       "q": 0.8
+      }
+     ],
+     "throb": [
+      {
+       "rate": 17.3,
+       "depth": 0.7
+      }
+     ]
+    },
+    {
+     "wave": "sine",
+     "at_ms": 560,
+     "freq": 58,
+     "attack_ms": 600,
+     "hold_ms": 1500,
+     "release_ms": 1300,
+     "gain": 0.18
+    }
+   ]
+  }
+ ],
+ "noise": {
+  "samples": 44100,
+  "seed": 7
+ },
+ "falloff": {
+  "_about": "How a sound fades with distance: full inside near_m, then one over distance, tapering to floor at far_m. open_hz to far_hz is how far off a sound dulls.",
+  "open_hz": 16000,
+  "far_hz": 1800,
+  "reach": {
+   "flock": {
+    "near_m": 6,
+    "far_m": 70,
+    "floor": 0
+   },
+   "voice": {
+    "near_m": 10,
+    "far_m": 180,
+    "floor": 0
+   },
+   "map": {
+    "near_m": 30,
+    "far_m": 300,
+    "floor": 0.3,
+    "far_hz": 6500
+   },
+   "close": {
+    "near_m": 4,
+    "far_m": 45,
+    "floor": 0
+   }
+  }
+ },
+ "mixer": {
+  "_about": "Keeps a big flock pleasant. Baas start one at a time at a rate that does not grow with the flock, and never more than max_baas at once. A baa is the loudest of baa_tries sheep picked at random, so near sheep speak most. Ticks are sixtieths of a second.",
+  "max_baas": 5,
+  "baa_every_ticks": 22,
+  "baa_spread_ticks": 44,
+  "baa_tries": 6,
+  "baa_full_flock": 40,
+  "lamb_share_percent": 22,
+  "audible": 0.015,
+  "hooves_every_ticks": 6,
+  "hooves_full": 14,
+  "hooves_gain": 0.8,
+  "run_step_ticks": 20,
+  "sprint_step_ticks": 14,
+  "pant_ticks": 42,
+  "smooth_ms": 60,
+  "fade_ms": 250,
+  "panning": "HRTF",
+  "loop_preview_ms": 4000,
+  "loudest_in_play": 0.6,
+  "test_flocks": [
+   100,
+   400
+  ],
+  "limiter": {
+   "_about": "A safety net against many sounds at once, not an effect: it leaves the mix alone until it nears full scale.",
+   "threshold_db": -1,
+   "knee_db": 0,
+   "ratio": 20,
+   "attack_ms": 3,
+   "release_ms": 120
+  }
+ },
+ "win_tunes": {
+  "sheepdogs": "scotland_the_brave",
+  "wolves": "flowers_of_the_forest"
+ },
+ "test_page": {
+  "title": "Fleeced sounds",
+  "tunes": "Win tunes",
+  "cues": "Sounds",
+  "loops": "Loops",
+  "flocks": "A big flock",
+  "sheep": "sheep",
+  "volume": "Volume",
+  "stop": "Stop"
+ }
+}
