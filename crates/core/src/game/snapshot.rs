@@ -176,6 +176,10 @@ pub struct Snapshot {
     /// Where each mound is, in the order of `view.mounds`.
     pub mound_spots: Vec<[Fx; 2]>,
     pub bodies: Vec<BodyRow>,
+    /// The seats in `bodies` this viewer sees a nameplate over
+    /// (`information::sees_plate`).
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub plates: Vec<u8>,
     pub sheep: Vec<SheepRow>,
     pub carcasses: Vec<CarcassRow>,
     /// Wolves just killed.
@@ -284,6 +288,17 @@ impl Match {
                 age: f.age(),
             })
         };
+        let bodies: Vec<BodyRow> = self
+            .players
+            .iter()
+            .zip(&self.world.bodies)
+            .filter_map(body_row)
+            .collect();
+        let plates = bodies
+            .iter()
+            .filter(|b| information::sees_plate(player.role, b.role, b.seat == player.seat))
+            .map(|b| b.seat)
+            .collect();
         let wolves = self.players.iter().zip(&self.world.bodies);
         let scents = wolves
             .filter(|(p, b)| aura && p.role == Role::Wolf && !b.out)
@@ -296,12 +311,8 @@ impl Match {
             eat_goal: self.goals.eats_required,
             darkness: self.night.darkness(),
             mound_spots: self.mounds.iter().map(|m| [m.x, m.z]).collect(),
-            bodies: self
-                .players
-                .iter()
-                .zip(&self.world.bodies)
-                .filter_map(body_row)
-                .collect(),
+            bodies,
+            plates,
             sheep: sheep.filter_map(sheep_row).collect(),
             carcasses: self.carcasses.iter().filter_map(carcass_row).collect(),
             fallen: self.fallen.iter().filter_map(fallen_row).collect(),

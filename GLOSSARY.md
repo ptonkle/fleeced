@@ -52,6 +52,10 @@ Moving low and slow. A crouched Sheepdog doesn't scare sheep, and a crouched Wol
 
 Not: sneak, duck
 
+### Defaults
+
+A lobby checkbox, on at first. While on, Number of sheep, Eats required and Map size follow the players seated, and show ??? until Random roles settle. Off, the host types them.
+
 ### Dig
 
 Holding E on a mound to get what's in it.

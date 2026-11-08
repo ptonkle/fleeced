@@ -62,6 +62,7 @@
   "lobby.powerups": "Powerups",
   "lobby.sudden": "Sudden death",
   "lobby.defaults": "Defaults",
+  "lobby.unknown": "???",
   "lobby.map_size": "Map size",
   "map_size.small": "Small",
   "map_size.medium": "Medium",

@@ -51,6 +51,8 @@ const STILL: Fx = cm(30);
 /// gets there, percent a frame.
 const ZOOMIES_WIDE: i32 = 30;
 const WIDE_EASE: i32 = 2;
+/// A nameplate's foot sits this far over a body's shoulder: clear of the head.
+const PLATE_ABOVE: Fx = cm(70);
 /// How fast legs cycle, percent of the pace that plants a foot exactly. Bodies
 /// outrun any stride a leg can reach, so feet slide a little rather than blur.
 const LEGS_PACE: i32 = 55;
@@ -281,6 +283,10 @@ pub struct Scene {
     sound: Value,
     /// The win tune has gone out.
     sang: bool,
+    /// Each seat's name as the lobby shows it, by seat.
+    names: Vec<String>,
+    /// This frame's nameplates, for the page to place.
+    plates: Value,
 }
 
 /// An open scene and the seed it was built for, held by `App`. A clone of
@@ -325,6 +331,8 @@ impl Scene {
             bank,
             sound: json!({"cues": [], "moves": [], "loops": []}),
             sang: false,
+            names: Vec::new(),
+            plates: json!([]),
         }
     }
 
@@ -347,6 +355,48 @@ impl Scene {
     /// What the page plays this frame.
     pub fn sound(&self) -> String {
         self.sound.to_string()
+    }
+
+    /// The seats' names, by seat, for the nameplates.
+    pub fn set_names(&mut self, names: Vec<String>) {
+        self.names = names;
+    }
+
+    /// This frame's nameplates: each one's name and where its foot goes, as
+    /// CSS percents of the view.
+    pub fn plates(&self) -> String {
+        self.plates.to_string()
+    }
+
+    /// A plate over each body the snapshot gives one, on screen this frame.
+    fn place_plates(&self, s: &Snapshot, cam: Camera) -> Value {
+        let size = self.hill.size();
+        let percent = |at: i32, of: i32| {
+            let p = at * 10_000 / of.max(1);
+            format!("{}.{:02}%", p / 100, p % 100)
+        };
+        let rows: Vec<Value> = s
+            .bodies
+            .iter()
+            .filter(|b| s.plates.contains(&b.seat))
+            .filter_map(|b| {
+                let name = self.names.get(b.seat as usize)?;
+                let shoulder = if b.crouched {
+                    b.role.breed().shoulder_crouched
+                } else {
+                    b.role.breed().shoulder
+                };
+                let top = v3(b.x, b.y + shoulder + PLATE_ABOVE, b.z);
+                let (x, y) = cam.screen(size, top)?;
+                let on = (0..size[0]).contains(&x) && (0..size[1]).contains(&y);
+                // the plate takes its outline's color: the page's class for it
+                let side = if b.role == s.me.role { "ally" } else { "enemy" };
+                on.then(|| {
+                    json!({ "name": name, "side": side, "left": percent(x, size[0]), "top": percent(y, size[1]) })
+                })
+            })
+            .collect();
+        Value::Array(rows)
     }
 
     /// Whether the camera's eye can stand here.
@@ -617,6 +667,7 @@ impl Scene {
             draws,
             outlines,
         };
+        self.plates = self.place_plates(&s, cam);
         self.hear(game, &s, cam);
     }
 
@@ -739,6 +790,29 @@ mod tests {
         };
         let game = Match::new(&start, Arc::new(Map::generate(3)));
         (Scene::new(&game, 3, 0), game)
+    }
+
+    #[test]
+    fn a_plate_names_the_sheepdog_ahead_of_a_wolf_and_none_names_the_wolf() {
+        let (mut scene, mut game) = scene_and_game();
+        let (x, z) = (game.world.bodies[0].x, game.world.bodies[0].z);
+        let map = game.shared_map();
+        let dog = &mut game.world.bodies[1];
+        (dog.x, dog.z) = (x, z - from_int(8));
+        dog.settle(&*map);
+        scene.resize(1920, 1080, 100);
+        scene.set_names(vec!["Wolfie".into(), "Rex".into()]);
+        scene.build(&game, (0, crate::game::aim::REST_PITCH), 3);
+        let plates: Value = serde_json::from_str(&scene.plates()).unwrap();
+        let names: Vec<_> = plates
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|p| p["name"].clone())
+            .collect();
+        assert_eq!(names, vec![json!("Rex")]);
+        // the Wolf sees a Sheepdog: the other team's color
+        assert_eq!(plates[0]["side"], json!("enemy"));
     }
 
     #[test]

@@ -140,11 +140,12 @@ function number(item) {
   const wrap = make("div", "field number");
   const label = make("label", "", item.label);
   const input = make("input");
-  input.type = "number";
+  // the core's text in place of the value: a disabled field showing words
+  input.type = item.text ? "text" : "number";
   input.id = item.id;
   input.setAttribute("min", item.min);
   input.setAttribute("max", item.max);
-  input.value = item.value;
+  input.value = item.text || item.value;
   input.disabled = item.disabled === true;
   label.htmlFor = item.id;
   on(item.id, "change", (t) => send(item.id, t.value));

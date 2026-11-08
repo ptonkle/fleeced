@@ -22,7 +22,7 @@ use crate::{glossary, icon, patch_notes};
 
 /// The build's version: the version button's text, and the top row of
 /// `data/patch-notes.json`. `scripts/bump.sh` changes the two together.
-pub const VERSION: &str = "0.1.6";
+pub const VERSION: &str = "0.1.7";
 
 /// The sound slider's step, percent.
 const VOLUME_STEP: u32 = 5;
@@ -534,7 +534,9 @@ impl App {
     pub fn build_scene(&mut self) {
         let room = self.room.as_ref();
         let game = room.and_then(|r| r.game.as_ref());
+        let names = room.map(|r| (0..MAX_SEATS).map(|n| self.seat_name(r, n)).collect());
         if let (Some(room), Some(game), Some((_, scene))) = (room, game, &mut self.scene.0) {
+            scene.set_names(names.unwrap_or_default());
             scene.build(game, room.aim, room.zoom);
         }
     }

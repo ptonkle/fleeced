@@ -1,5 +1,5 @@
 use super::*;
-use crate::lobby::Lobby;
+use crate::lobby::{Lobby, Role};
 use crate::online::room::CODE_LEN;
 use crate::online::{encode, Msg, PROTOCOL};
 use crate::strings::tests::sample;
@@ -235,7 +235,7 @@ fn leaving_a_room_tells_the_transport_once() {
 }
 
 #[test]
-fn a_joiner_sees_the_settings_locked_and_a_ready_box_where_the_host_has_start() {
+fn a_joiner_sees_the_settings_locked_and_a_ready_button_where_the_host_has_start() {
     let a = joined();
     let shown = ids(&a);
     assert!(shown.contains(&"lobby.ready".to_string()), "{shown:?}");
@@ -255,13 +255,14 @@ fn a_joiner_sees_the_settings_locked_and_a_ready_box_where_the_host_has_start() 
 }
 
 #[test]
-fn the_lobby_offers_three_map_sizes_big_first_chosen_and_locked_for_a_joiner() {
+fn the_lobby_offers_three_map_sizes_filled_by_defaults_and_locked_for_a_joiner() {
     let a = joined();
     let v = serde_json::to_value(a.ui().panels).unwrap();
     let items = v[1]["items"].as_array().unwrap();
     let size = items.iter().find(|i| i["id"] == "lobby.map_size").unwrap();
     assert_eq!(size["label"], a.strings.get("lobby.map_size"));
-    assert_eq!(size["value"], "big");
+    // two players: Defaults picks Small
+    assert_eq!(size["value"], "small");
     assert_eq!(size["disabled"], true);
     let words: Vec<String> = size["options"]
         .as_array()
@@ -271,6 +272,74 @@ fn the_lobby_offers_three_map_sizes_big_first_chosen_and_locked_for_a_joiner() {
         .collect();
     let sizes = ["map_size.small", "map_size.medium", "map_size.big"];
     assert_eq!(words, sizes.map(|key| a.strings.get(key)));
+}
+
+/// The joiner's lobby with its own seat marked ready or not.
+fn joined_ready(ready: bool) -> App {
+    let mut a = joined();
+    let mut lobby = Lobby::new("h", "Morag");
+    lobby.add_person("me", "");
+    lobby.set_ready("me", ready);
+    a.net_event("message", "h", &encode(&Msg::Roster { lobby }), false, 0);
+    a
+}
+
+/// The items of the panel with this id, as the page gets them.
+fn items_of(a: &App, panel: &str) -> Vec<serde_json::Value> {
+    let v = serde_json::to_value(a.ui().panels).unwrap();
+    let found = v.as_array().unwrap().iter().find(|p| p["kind"] == panel).unwrap();
+    found["items"].as_array().unwrap().clone()
+}
+
+#[test]
+fn the_ready_button_ends_the_match_panel_and_says_what_it_does() {
+    for (ready, key) in [(false, "lobby.ready"), (true, "lobby.not_ready")] {
+        let a = joined_ready(ready);
+        let items = items_of(&a, "match");
+        let last = items.last().unwrap();
+        assert_eq!(
+            (&last["type"], &last["id"]),
+            (&"button".into(), &"lobby.ready".into())
+        );
+        assert_eq!(last["text"], a.strings.get(key), "ready: {ready}");
+        assert!(last.get("quiet").is_none_or(|q| q == false), "a real button");
+    }
+}
+
+#[test]
+fn the_name_field_sits_under_your_own_seat() {
+    let a = joined();
+    let ids: Vec<String> = items_of(&a, "seats")
+        .iter()
+        .map(|i| i["id"].as_str().unwrap_or_default().to_string())
+        .collect();
+    let mine = ids.iter().position(|id| id == "seat.1").unwrap();
+    assert_eq!(ids[mine + 1], "lobby.name", "{ids:?}");
+    assert!(!items_of(&a, "match").iter().any(|i| i["id"] == "lobby.name"));
+}
+
+#[test]
+fn sheep_and_eats_show_unknown_while_defaults_waits_on_a_random_seat() {
+    let shown = |a: &App, id: &str| {
+        let items = items_of(a, "match");
+        let item = items.iter().find(|i| i["id"] == id).unwrap();
+        item.get("text").cloned()
+    };
+    let a = joined();
+    let unknown = serde_json::Value::from(a.strings.get("lobby.unknown"));
+    assert_eq!(
+        shown(&a, "lobby.sheep"),
+        Some(unknown.clone()),
+        "both seats Random"
+    );
+    assert_eq!(shown(&a, "lobby.eats"), Some(unknown));
+    let mut sure = joined();
+    let mut lobby = Lobby::new("h", "Morag");
+    lobby.add_person("me", "");
+    lobby.set_role(0, Role::Wolf);
+    lobby.set_role(1, Role::Sheepdog);
+    sure.net_event("message", "h", &encode(&Msg::Roster { lobby }), false, 0);
+    assert_eq!(shown(&sure, "lobby.sheep"), None, "the numbers show");
 }
 
 #[test]

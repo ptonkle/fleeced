@@ -34,6 +34,19 @@ pub fn lobby_defaults(wolves: i32) -> LobbyDefaults {
     }
 }
 
+/// The Map size Defaults picks for this many players: Small up to
+/// `MAP_SMALL_MAX_PLAYERS`, Medium up to `MAP_MEDIUM_MAX_PLAYERS`, then Big.
+/// The team sizes don't matter, so it is known before Random roles settle.
+pub fn map_size_for(players: i32) -> MapSize {
+    if players <= tune::MAP_SMALL_MAX_PLAYERS {
+        MapSize::Small
+    } else if players <= tune::MAP_MEDIUM_MAX_PLAYERS {
+        MapSize::Medium
+    } else {
+        MapSize::Big
+    }
+}
+
 /// How many sheep must reach the Fold: a number per Sheepdog, whatever the
 /// Wolves or the flock, capped at sheep minus eats required plus 1.
 ///
@@ -59,6 +72,14 @@ pub struct Settings {
     /// Whether the host typed this value. Once they have, `refill` leaves it.
     pub sheep_by_hand: bool,
     pub eats_by_hand: bool,
+    /// Defaults: Number of sheep, Eats required and Map size follow the
+    /// lobby, and the host can't type them.
+    #[serde(default = "on")]
+    pub defaults: bool,
+}
+
+fn on() -> bool {
+    true
 }
 
 impl Default for Settings {
@@ -73,6 +94,7 @@ impl Default for Settings {
             map_size: MapSize::default(),
             sheep_by_hand: false,
             eats_by_hand: false,
+            defaults: true,
         }
     }
 }
@@ -88,6 +110,15 @@ impl Settings {
     pub fn set_eats_required(&mut self, eats_required: i32) {
         self.eats_required = eats_required;
         self.eats_by_hand = true;
+    }
+
+    /// Defaults on or off. Off keeps the values as they stand, as if typed;
+    /// on lets Number of sheep and Eats required follow the Wolves again.
+    /// The caller refills.
+    pub fn set_defaults(&mut self, on: bool) {
+        self.defaults = on;
+        self.sheep_by_hand = !on;
+        self.eats_by_hand = !on;
     }
 
     /// Refills whatever the host hasn't typed, for this many Wolves. A
@@ -243,6 +274,9 @@ pub fn start_match(settings: &Settings, seats: &[LobbySeat], seed: u64) -> Resul
     let wolves = roles.iter().filter(|r| **r == Role::Wolf).count() as i32;
     let mut settled = *settings;
     settled.refill(wolves);
+    if settled.defaults {
+        settled.map_size = map_size_for(seats.len() as i32);
+    }
     settled.validate()?;
     let sheepdogs = roles.iter().filter(|r| **r == Role::Sheepdog).count() as i32;
     let goals = goals(&settled, sheepdogs);
@@ -268,6 +302,14 @@ mod tests {
             bot: false,
         };
         choices.iter().map(seat).collect()
+    }
+
+    #[test]
+    fn defaults_pick_the_map_size_by_players() {
+        // Small to 3 players, Medium to 5, then Big
+        let sizes: Vec<MapSize> = (1..=8).map(map_size_for).collect();
+        use MapSize::{Big, Medium, Small};
+        assert_eq!(sizes, [Small, Small, Small, Medium, Medium, Big, Big, Big]);
     }
 
     #[test]

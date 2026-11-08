@@ -12,12 +12,14 @@
 //! - each seat is empty, a person or a bot, and a bot gives way to a person;
 //! - a match needs at least one Sheepdog and one Wolf, and a Random seat can
 //!   be either, so the check counts what Random seats can still become;
-//! - every person but the host has pressed Ready.
+//! - every person but the host has pressed Ready;
+//! - with Defaults on, Map size follows the number of players and the host
+//!   can't type the three values Defaults fills.
 
 use serde::{Deserialize, Serialize};
 
 use crate::map::MapSize;
-use crate::rules::setup::{start_match, LobbySeat, RoleChoice, Settings};
+use crate::rules::setup::{map_size_for, start_match, LobbySeat, RoleChoice, Settings};
 use crate::rules::{tune, Role as Team};
 
 /// The most seats in a match, people and bots together.
@@ -158,6 +160,7 @@ impl Lobby {
             name: clean_name(host_name),
             ready: false,
         };
+        lobby.refill();
         lobby
     }
 
@@ -180,12 +183,27 @@ impl Lobby {
             .count() as u32
     }
 
+    /// The seats someone sits in, people and bots.
+    pub fn players(&self) -> i32 {
+        self.seats.iter().filter(|s| s.who != Who::Empty).count() as i32
+    }
+
     /// Follows the wolf count. Random seats do not count until they settle,
     /// and a lobby with no sure Wolf reads as one. Two typed fields can still
     /// cross, so Eats required never passes the number of sheep here.
     fn refill(&mut self) {
         self.settings.refill(self.count(Role::Wolf) as i32);
         self.settings.eats_required = self.settings.eats_required.min(self.settings.sheep);
+        if self.settings.defaults {
+            self.settings.map_size = map_size_for(self.players());
+        }
+    }
+
+    /// Whether Defaults can't say Number of sheep and Eats required yet: it
+    /// is on and a taken seat is Random, so the wolf count waits for the
+    /// match start.
+    pub fn defaults_unsure(&self) -> bool {
+        self.settings.defaults && self.count(Role::Random) > 0
     }
 
     /// Seats a person: the first empty seat, or a bot's seat if none is
@@ -263,13 +281,21 @@ impl Lobby {
     }
 
     /// The host types the number of sheep: from now on it stays as typed.
+    /// Defaults on, it can't be typed.
     pub fn set_sheep(&mut self, sheep: i32) {
+        if self.settings.defaults {
+            return;
+        }
         self.settings.set_sheep(sheep.clamp(SHEEP.0, SHEEP.1));
         self.refill();
     }
 
     /// The host types the eats required: from now on it stays as typed.
+    /// Defaults on, it can't be typed.
     pub fn set_eats(&mut self, eats: i32) {
+        if self.settings.defaults {
+            return;
+        }
         self.settings.set_eats_required(eats.clamp(EATS.0, EATS.1));
         self.refill();
     }
@@ -282,14 +308,17 @@ impl Lobby {
         self.settings.sudden_death = on;
     }
 
+    /// Defaults on, the Map size follows the players and can't be chosen.
     pub fn set_map_size(&mut self, size: MapSize) {
-        self.settings.map_size = size;
+        if !self.settings.defaults {
+            self.settings.map_size = size;
+        }
     }
 
-    /// Every match setting back to its default, with Number of sheep and
-    /// Eats required filled for the teams as they stand.
-    pub fn reset_settings(&mut self) {
-        self.settings = Settings::default();
+    /// Defaults on refills Number of sheep, Eats required and Map size for
+    /// the lobby as it stands; off keeps them as they are, to be typed.
+    pub fn set_defaults(&mut self, on: bool) {
+        self.settings.set_defaults(on);
         self.refill();
     }
 
@@ -397,57 +426,84 @@ mod tests {
     }
 
     #[test]
-    fn defaults_puts_every_setting_back_and_fills_for_the_teams() {
+    fn defaults_off_keeps_the_values_to_type_and_on_refills_them() {
         let mut l = people(3);
+        l.set_role(0, Role::Sheepdog);
         l.set_role(1, Role::Wolf);
         l.set_role(2, Role::Wolf);
+        l.set_role(3, Role::Random);
         l.set_sheep(123);
-        l.set_eats(40);
-        l.set_minutes(3);
-        l.set_map_size(MapSize::Small);
-        l.set_powerups(!tune::POWERUPS_ON);
-        l.set_sudden_death(!tune::SUDDEN_DEATH);
-        l.reset_settings();
+        l.set_map_size(MapSize::Big);
+        // Defaults on: two sure Wolves, 100 + 50 sheep and 8 eats each; four
+        // players get a Medium map; typing does nothing
         let s = l.settings;
-        // two Wolves: 100 + 50 sheep and 8 eats each
-        assert_eq!((s.sheep, s.eats_required), (150, 16));
-        assert_eq!(s.match_minutes, tune::MATCH_MINUTES);
-        assert_eq!(s.map_size, MapSize::Big);
+        assert_eq!((s.sheep, s.eats_required, s.map_size), (150, 16, MapSize::Medium));
+        l.set_defaults(false);
+        l.set_role(3, Role::Wolf);
+        let s = l.settings;
         assert_eq!(
-            (s.powerups, s.sudden_death),
-            (tune::POWERUPS_ON, tune::SUDDEN_DEATH)
+            (s.sheep, s.eats_required, s.map_size),
+            (150, 16, MapSize::Medium),
+            "kept though a third Wolf sat down"
         );
-        // and it refills again as teams change, as it did before any typing
-        l.set_role(2, Role::Sheepdog);
-        assert_eq!((l.settings.sheep, l.settings.eats_required), (80, 9));
+        l.set_sheep(123);
+        l.set_map_size(MapSize::Big);
+        let s = l.settings;
+        assert_eq!(
+            (s.sheep, s.eats_required, s.map_size),
+            (123, 16, MapSize::Big),
+            "kept as typed"
+        );
+        l.set_defaults(true);
+        // three Wolves: 100 + 50 + 50 sheep, 24 eats
+        let s = l.settings;
+        assert_eq!((s.sheep, s.eats_required, s.map_size), (200, 24, MapSize::Medium));
     }
 
     #[test]
-    fn the_map_size_starts_big_and_the_hosts_choice_goes_with_the_seed() {
+    fn defaults_size_the_map_by_the_players_whatever_the_teams() {
+        let mut l = Lobby::new("h", "Host");
+        l.set_role(0, Role::Wolf);
+        assert_eq!(l.settings.map_size, MapSize::Small, "one player");
+        for seat in 1..4 {
+            l.set_bot(seat, true, Role::Random);
+        }
+        assert_eq!(l.settings.map_size, MapSize::Medium, "four players");
+        l.set_bot(4, true, Role::Sheepdog);
+        l.set_bot(5, true, Role::Wolf);
+        assert_eq!(l.settings.map_size, MapSize::Big, "six players");
+        assert_eq!(l.start(3).unwrap().settings.map_size, MapSize::Big);
+        l.set_bot(5, false, Role::Wolf);
+        l.set_bot(4, false, Role::Wolf);
+        assert_eq!(l.settings.map_size, MapSize::Medium, "back to four");
+    }
+
+    #[test]
+    fn defaults_are_unsure_while_a_taken_seat_is_random() {
+        let mut l = people(1);
+        assert!(l.defaults_unsure(), "both seats start Random");
+        l.set_role(0, Role::Wolf);
+        assert!(l.defaults_unsure(), "one is still Random");
+        l.set_role(1, Role::Sheepdog);
+        assert!(!l.defaults_unsure());
+        l.set_role(1, Role::Random);
+        l.set_defaults(false);
+        assert!(!l.defaults_unsure(), "typed values are sure");
+    }
+
+    #[test]
+    fn the_hosts_map_size_goes_with_the_seed() {
         let mut l = people(1);
         l.set_role(0, Role::Sheepdog);
         l.set_role(1, Role::Wolf);
-        assert_eq!(l.settings.map_size, MapSize::Big);
-        l.set_map_size(MapSize::Small);
+        l.set_defaults(false);
+        l.set_map_size(MapSize::Medium);
         let start = l.start(5).unwrap();
-        assert_eq!(start.settings.map_size, MapSize::Small);
+        assert_eq!(start.settings.map_size, MapSize::Medium);
         let text = serde_json::to_string(&start).unwrap();
-        assert!(text.contains(r#""map_size":"small""#), "{text}");
+        assert!(text.contains(r#""map_size":"medium""#), "{text}");
         let read: MatchStart = serde_json::from_str(&text).unwrap();
         assert_eq!(read, start);
-    }
-
-    #[test]
-    fn a_field_the_host_edited_stops_refilling_and_the_other_goes_on() {
-        let mut l = people(2);
-        l.set_sheep(123);
-        l.set_role(1, Role::Wolf);
-        l.set_role(2, Role::Wolf);
-        assert_eq!(l.settings.sheep, 123, "typed by hand");
-        assert_eq!(l.settings.eats_required, 16, "still following");
-        l.set_eats(7);
-        l.set_role(2, Role::Sheepdog);
-        assert_eq!((l.settings.sheep, l.settings.eats_required), (123, 7));
     }
 
     #[test]
@@ -521,6 +577,7 @@ mod tests {
                 }
             );
         }
+        l.set_defaults(false);
         l.set_sheep(300);
         l.set_eats(30);
         let m = l.start(9).unwrap();
@@ -573,6 +630,7 @@ mod tests {
     #[test]
     fn eats_required_stays_within_the_sheep() {
         let mut l = Lobby::new("h", "Host");
+        l.set_defaults(false);
         l.set_eats(50);
         l.set_sheep(20);
         assert_eq!(l.settings.eats_required, 20);
@@ -585,6 +643,7 @@ mod tests {
         assert_eq!(l.settings.match_minutes, MINUTES.0);
         l.set_minutes(999);
         assert_eq!(l.settings.match_minutes, MINUTES.1);
+        l.set_defaults(false);
         l.set_sheep(1);
         assert_eq!(l.settings.sheep, SHEEP.0);
         l.set_sheep(9999);

@@ -74,6 +74,13 @@ pub fn sees_outline(viewer: Role, target: Role) -> bool {
     outline_rule(viewer, target, tune::WOLVES_SEE_DOGS)
 }
 
+/// Whether a viewer gets a nameplate over another player: exactly where it
+/// sees that player's outline, and never over its own body, so a plate gives
+/// nothing away an outline doesn't. A Wolf in the Sheep suit is still a Wolf.
+pub fn sees_plate(viewer: Role, target: Role, own: bool) -> bool {
+    !own && sees_outline(viewer, target)
+}
+
 /// How far a team sees at this darkness, moving evenly from the day's range
 /// to the night's as the light changes.
 pub fn sight_range(role: Role, darkness: Fx) -> Fx {

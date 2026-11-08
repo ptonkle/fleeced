@@ -155,6 +155,11 @@ impl Game {
         self.scene().map_or_else(String::new, Scene::sound)
     }
 
+    /// This frame's nameplates, for `web/play.js`.
+    pub fn scene_plates(&self) -> String {
+        self.scene().map_or_else(String::new, Scene::plates)
+    }
+
     /// The match's HUD for this browser.
     pub fn hud(&self) -> String {
         match &self.app {

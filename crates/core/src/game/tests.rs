@@ -15,6 +15,7 @@ use crate::rules::setup::Settings;
 use crate::rules::tune::Powerup::{self as Kind};
 use crate::rules::tune::POWERUPS;
 
+mod plates;
 mod powerup_effects;
 
 const DOG: usize = 0;

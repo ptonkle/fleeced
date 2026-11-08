@@ -109,9 +109,10 @@ function buildHud() {
   const kill = make("div", "hud-kill");
   const flash = make("div", "hud-flash");
   const click = make("div", "hud-click");
-  root.append(flash, top, left, power, effects, cross, prompt, dig.box, message, kill, click);
+  const plates = make("div", "hud-plates");
+  root.append(plates, flash, top, left, power, effects, cross, prompt, dig.box, message, kill, click);
   document.body.append(root);
-  return { root, cross, counts, time, dial, dialValue, dialLabel, dialKey, stamina, staminaLabel, staminaKey, power, powerIcon, powerName, meter, useKey, useLabel, dropKey, dropLabel, effects, effectRows: new Map(), prompt, promptKey, promptText, dig, message, click, kill, flash };
+  return { root, cross, counts, time, dial, dialValue, dialLabel, dialKey, stamina, staminaLabel, staminaKey, power, powerIcon, powerName, meter, useKey, useLabel, dropKey, dropLabel, effects, effectRows: new Map(), prompt, promptKey, promptText, dig, message, click, kill, flash, plates, plateRows: [] };
 }
 
 function setText(node, text) {
@@ -190,6 +191,26 @@ function drawHud() {
   hud.dig.box.hidden = h.dig === 0;
   fill(hud.dig.fill, h.dig);
   hud.click.textContent = h.click;
+}
+
+// Nameplates over the players the core gives one, where it places them.
+// Each keeps its node from frame to frame.
+function drawPlates() {
+  const rows = JSON.parse(game.scene_plates() || "[]");
+  while (hud.plateRows.length < rows.length) {
+    const node = make("div", "hud-plate");
+    hud.plates.append(node);
+    hud.plateRows.push(node);
+  }
+  hud.plateRows.forEach((node, i) => {
+    const row = rows[i];
+    node.hidden = !row;
+    if (!row) return;
+    if (node.textContent !== row.name) node.textContent = row.name;
+    node.className = "hud-plate " + row.side;
+    node.style.left = row.left;
+    node.style.top = row.top;
+  });
 }
 
 // ---- the scene ----
@@ -320,5 +341,6 @@ export function drawPlay(ui) {
   world(view);
   blades(view);
   drawHud();
+  drawPlates();
   sound();
 }

@@ -235,6 +235,12 @@ steps = ["core"]
 tags = ["rules"]
 
 [[rule]]
+name = "tests of the nameplates"
+files = ["crates/core/src/game/tests/plates.rs"]
+steps = ["core"]
+tags = ["rules"]
+
+[[rule]]
 name = "tests of the map"
 files = ["crates/core/examples/**", "crates/core/src/ground.rs", "crates/core/src/map/**"]
 steps = ["core"]

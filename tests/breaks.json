@@ -2263,9 +2263,9 @@
   {
     "name": "shell: a joiner may edit the settings",
     "file": "crates/core/src/app/lobby_view.rs",
-    "find": "self.number(\"lobby.sheep\", s.sheep, SHEEP, !host),",
-    "replace": "self.number(\"lobby.sheep\", s.sheep, SHEEP, false),",
-    "test": "a_joiner_sees_the_settings_locked_and_a_ready_box_where_the_host_has_start"
+    "find": "let filled = !host || s.defaults;",
+    "replace": "let filled = false;",
+    "test": "a_joiner_sees_the_settings_locked_and_a_ready_button_where_the_host_has_start"
   },
   {
     "name": "shell: the dock's limit is off by one",
@@ -2385,13 +2385,6 @@
     "find": "self.settings.refill(self.count(Role::Wolf) as i32);",
     "replace": "let _ = self.count(Role::Wolf);",
     "test": "the_lobby_refills_the_defaults_as_teams_change"
-  },
-  {
-    "name": "shell tests: a typed field keeps refilling",
-    "file": "crates/core/src/lobby.rs",
-    "find": "self.settings.set_sheep(sheep.clamp(SHEEP.0, SHEEP.1));",
-    "replace": "self.settings.sheep = sheep.clamp(SHEEP.0, SHEEP.1);",
-    "test": "a_field_the_host_edited_stops_refilling_and_the_other_goes_on"
   },
   {
     "name": "shell tests: every seat settles as a Wolf",
@@ -5583,7 +5576,7 @@
     "file": "crates/core/src/rules/setup.rs",
     "find": "    #[serde(default)]\n    pub map_size: MapSize,",
     "replace": "    #[serde(skip)]\n    pub map_size: MapSize,",
-    "test": "the_map_size_starts_big_and_the_hosts_choice_goes_with_the_seed"
+    "test": "the_hosts_map_size_goes_with_the_seed"
   },
   {
     "name": "map size: a joiner cannot change it",
@@ -5602,9 +5595,9 @@
   {
     "name": "map size: the lobby offers it",
     "file": "crates/core/src/app/lobby_view.rs",
-    "find": "                disabled: !host,\n            },\n            self.number(\"lobby.sheep\"",
+    "find": "                disabled: filled,\n            },\n            self.number(\"lobby.sheep\"",
     "replace": "                disabled: false,\n            },\n            self.number(\"lobby.sheep\"",
-    "test": "the_lobby_offers_three_map_sizes_big_first_chosen_and_locked_for_a_joiner"
+    "test": "the_lobby_offers_three_map_sizes_filled_by_defaults_and_locked_for_a_joiner"
   },
   {
     "name": "map size: every size keeps the grass budget",
@@ -5859,18 +5852,18 @@
     "test": "the_winners_dance_on_screen_with_and_without_reduced_motion"
   },
   {
-    "name": "defaults: typed numbers stay typed",
-    "file": "crates/core/src/lobby.rs",
-    "find": "        self.settings = Settings::default();\n        self.refill();",
-    "replace": "        self.settings.match_minutes = Settings::default().match_minutes;\n        self.refill();",
-    "test": "defaults_puts_every_setting_back_and_fills_for_the_teams"
+    "name": "defaults: the map size follows the players",
+    "file": "crates/core/src/rules/setup.rs",
+    "find": "    } else if players <= tune::MAP_MEDIUM_MAX_PLAYERS {",
+    "replace": "    } else if players < tune::MAP_MEDIUM_MAX_PLAYERS {",
+    "test": "defaults_pick_the_map_size_by_players"
   },
   {
-    "name": "defaults: filled for one Wolf",
-    "file": "crates/core/src/lobby.rs",
-    "find": "        self.settings = Settings::default();\n        self.refill();",
-    "replace": "        self.settings = Settings::default();",
-    "test": "defaults_puts_every_setting_back_and_fills_for_the_teams"
+    "name": "defaults: off lets the values follow the wolves",
+    "file": "crates/core/src/rules/setup.rs",
+    "find": "        self.sheep_by_hand = !on;",
+    "replace": "        self.sheep_by_hand = false;",
+    "test": "defaults_off_keeps_the_values_to_type_and_on_refills_them"
   },
   {
     "name": "bot sight: a suited Wolf passes",
@@ -5892,5 +5885,99 @@
     "find": "    } else if row.role == viewer {\n        Some(TEAM_LINE)",
     "replace": "    } else if row.role == viewer || true {\n        Some(TEAM_LINE)",
     "test": "teammates_line_blue_and_the_other_team_orange"
+  },
+  {
+    "find": "    pub fn set_sheep(&mut self, sheep: i32) {\n        if self.settings.defaults {\n            return;\n        }",
+    "replace": "    pub fn set_sheep(&mut self, sheep: i32) {",
+    "test": "defaults_off_keeps_the_values_to_type_and_on_refills_them"
+  },
+  {
+    "name": "defaults: the lobby leaves the map size alone",
+    "file": "crates/core/src/lobby.rs",
+    "find": "            self.settings.map_size = map_size_for(self.players());",
+    "replace": "            let _ = self.players();",
+    "test": "defaults_size_the_map_by_the_players_whatever_the_teams"
+  },
+  {
+    "name": "defaults: sure while a seat is Random",
+    "file": "crates/core/src/lobby.rs",
+    "find": "        self.settings.defaults && self.count(Role::Random) > 0",
+    "replace": "        self.settings.defaults",
+    "test": "defaults_are_unsure_while_a_taken_seat_is_random"
+  },
+  {
+    "name": "defaults: the lobby never shows unknown numbers",
+    "file": "crates/core/src/app/lobby_view.rs",
+    "find": "        let unsure = room.lobby.defaults_unsure();",
+    "replace": "        let unsure = false;",
+    "test": "sheep_and_eats_show_unknown_while_defaults_waits_on_a_random_seat"
+  },
+  {
+    "name": "lobby: the Ready button always says Ready",
+    "file": "crates/core/src/app/lobby_view.rs",
+    "find": "                \"lobby.not_ready\"\n            } else {",
+    "replace": "                \"lobby.ready\"\n            } else {",
+    "test": "the_ready_button_ends_the_match_panel_and_says_what_it_does"
+  },
+  {
+    "name": "lobby: the name field sits in the Match panel",
+    "file": "crates/core/src/app/lobby_view.rs",
+    "find": "            if mine == Some(n) && room.kind != Kind::Solo {",
+    "replace": "            if false {",
+    "test": "the_name_field_sits_under_your_own_seat"
+  },
+  {
+    "name": "lobby: the Ready button sets ready every press",
+    "file": "crates/core/src/online/room.rs",
+    "find": "                    _ => !self.am_ready(),",
+    "replace": "                    _ => true,",
+    "test": "the_ready_button_flips_a_joiners_ready"
+  },
+  {
+    "name": "defaults: on refills at once",
+    "file": "crates/core/src/lobby.rs",
+    "find": "        self.settings.set_defaults(on);\n        self.refill();",
+    "replace": "        self.settings.set_defaults(on);",
+    "test": "defaults_off_keeps_the_values_to_type_and_on_refills_them"
+  },
+  {
+    "find": "        self.settings = Settings::default();\n        self.refill();",
+    "replace": "        self.settings = Settings::default();",
+    "test": "defaults_puts_every_setting_back_and_fills_for_the_teams"
+  },
+  {
+    "name": "plates: none over your own body",
+    "file": "crates/core/src/rules/information.rs",
+    "find": "    !own && sees_outline(viewer, target)\n",
+    "replace": "    sees_outline(viewer, target)\n",
+    "test": "a_wolf_gets_plates_over_its_teammate_and_the_sheepdogs_but_not_itself"
+  },
+  {
+    "name": "plates: a Sheepdog gets none over a Wolf",
+    "file": "crates/core/src/rules/information.rs",
+    "find": "    !own && sees_outline(viewer, target)\n",
+    "replace": "    !own\n",
+    "test": "a_sheepdog_gets_a_plate_over_its_teammate_and_none_over_a_wolf"
+  },
+  {
+    "name": "plates: a cloaked Wolf gets none for Sheepdogs",
+    "file": "crates/core/src/rules/information.rs",
+    "find": "    !own && sees_outline(viewer, target)\n",
+    "replace": "    !own && (sees_outline(viewer, target) || viewer != target)\n",
+    "test": "a_cloaked_wolf_has_no_plate_for_sheepdogs_and_keeps_its_teams"
+  },
+  {
+    "name": "plates: a dead Wolf gets none",
+    "file": "crates/core/src/game/snapshot.rs",
+    "find": "let shown = !b.out && !hidden &&",
+    "replace": "let shown = !hidden &&",
+    "test": "a_dead_wolf_has_no_plate"
+  },
+  {
+    "name": "plates: the scene draws only the plates the snapshot gives",
+    "file": "crates/core/src/scene.rs",
+    "find": "            .filter(|b| s.plates.contains(&b.seat))\n",
+    "replace": "",
+    "test": "a_plate_names_the_sheepdog_ahead_of_a_wolf_and_none_names_the_wolf"
   }
 ]

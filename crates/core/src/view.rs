@@ -115,6 +115,9 @@ pub enum Item {
         max: u32,
         #[serde(skip_serializing_if = "is_false")]
         disabled: bool,
+        /// shown in place of the value when not empty (the lobby's "???")
+        #[serde(skip_serializing_if = "String::is_empty")]
+        text: String,
     },
     /// short lines of text, one after another; `id`, when not empty, is
     /// for the checks to find them

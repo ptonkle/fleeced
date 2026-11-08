@@ -610,6 +610,13 @@ impl Room {
         }
     }
 
+    /// Whether this browser's seat has pressed Ready.
+    pub fn am_ready(&self) -> bool {
+        self.lobby
+            .seat_of(&self.client)
+            .is_some_and(|n| matches!(&self.lobby.seats[n].who, Who::Person { ready: true, .. }))
+    }
+
     fn host_only(&self, name: &str) -> Result<(), String> {
         if self.is_host() {
             Ok(())
@@ -638,8 +645,13 @@ impl Room {
                     });
                 }
             }
+            // the Ready button sends nothing and flips it; "on" and "off" set it
             "lobby.ready" => {
-                let ready = value == "on";
+                let ready = match value {
+                    "on" => true,
+                    "off" => false,
+                    _ => !self.am_ready(),
+                };
                 if self.is_host() {
                     let client = self.client.clone();
                     self.lobby.set_ready(&client, ready);
@@ -676,7 +688,7 @@ impl Room {
             }
             "lobby.defaults" => {
                 self.host_only(name)?;
-                self.lobby.reset_settings();
+                self.lobby.set_defaults(value == "on");
             }
             other => return self.seat_act(other, value),
         }

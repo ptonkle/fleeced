@@ -84,6 +84,10 @@ impl Game {
         self.g.scene_sound()
     }
 
+    pub fn scene_plates(&self) -> String {
+        self.g.scene_plates()
+    }
+
     pub fn hud(&self) -> String {
         self.g.hud()
     }

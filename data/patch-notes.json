@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.7",
+    "date": "2026-11-08",
+    "notes": [
+      "Ready is a button at the bottom of the lobby.",
+      "Set your name beside your seat.",
+      "Defaults is a checkbox, and the map size follows the number of players.",
+      "Nameplates over your teammates."
+    ]
+  },
+  {
     "version": "0.1.6",
     "date": "2026-11-08",
     "notes": [

@@ -38,6 +38,10 @@ pub const SHEEP_MAX: i32 = 400; // contract: seven Wolves' default
 pub const EATS_PER_WOLF: i32 = 8; // bot table, person agreed
 pub const EATS_LONE_WOLF: i32 = 9; // bot table, person agreed
 pub const EATS_MIN: i32 = 1; // agent
+/// With Defaults on, the most players a Small map takes, then a Medium one;
+/// more players get Big.
+pub const MAP_SMALL_MAX_PLAYERS: i32 = 3; // agent
+pub const MAP_MEDIUM_MAX_PLAYERS: i32 = 5; // agent
 pub const POWERUPS_ON: bool = true; // person
 pub const SUDDEN_DEATH: bool = false; // person
 

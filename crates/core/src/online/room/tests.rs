@@ -141,6 +141,19 @@ fn a_join_the_lobby_has_no_seat_for_is_turned_away() {
 }
 
 #[test]
+fn the_ready_button_flips_a_joiners_ready() {
+    let mut wire = Wire::new(1);
+    wire.link(1);
+    let ready = |wire: &Wire| matches!(&wire.rooms[0].lobby.seats[1].who, Who::Person { ready: true, .. });
+    wire.rooms[1].act("lobby.ready", "").unwrap();
+    wire.settle();
+    assert!(ready(&wire));
+    wire.rooms[1].act("lobby.ready", "").unwrap();
+    wire.settle();
+    assert!(!ready(&wire));
+}
+
+#[test]
 fn a_joiner_asks_for_its_own_seat_and_the_host_ignores_the_rest() {
     let mut wire = Wire::new(2);
     wire.link(1);
@@ -562,6 +575,7 @@ fn a_finished_match_goes_back_to_the_lobby_and_a_running_one_does_not() {
 fn the_hosts_map_size_shows_on_every_browser_and_a_joiner_cannot_change_it() {
     let mut wire = Wire::new(1);
     wire.link(1);
+    wire.rooms[0].act("lobby.defaults", "off").unwrap();
     wire.rooms[0].act("lobby.map_size", "small").unwrap();
     wire.settle();
     assert_eq!(wire.rooms[1].lobby.settings.map_size, MapSize::Small);
@@ -575,6 +589,7 @@ fn the_hosts_map_size_shows_on_every_browser_and_a_joiner_cannot_change_it() {
 fn a_match_is_played_on_the_map_size_the_lobby_set() {
     let mut wire = Wire::new(1);
     wire.link(1);
+    wire.rooms[0].act("lobby.defaults", "off").unwrap();
     wire.rooms[0].act("lobby.map_size", "medium").unwrap();
     wire.rooms[1].act("lobby.ready", "on").unwrap();
     wire.rooms[1].act("seat.1.role", "wolf").unwrap();

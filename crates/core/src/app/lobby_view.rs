@@ -181,7 +181,19 @@ impl App {
                 text: self.strings.get("lobby.copy_link"),
             });
         }
-        items.extend((0..MAX_SEATS).map(|n| self.seat_item(room, n)));
+        let mine = room.lobby.seat_of(&room.client);
+        for n in 0..MAX_SEATS {
+            items.push(self.seat_item(room, n));
+            if mine == Some(n) && room.kind != Kind::Solo {
+                items.push(Item::Text {
+                    id: "lobby.name".into(),
+                    label: self.strings.get("lobby.name"),
+                    value: self.save.name.clone(),
+                    max: crate::lobby::MAX_NAME_CHARS as u32,
+                    placeholder: self.strings.get("lobby.name_hint"),
+                });
+            }
+        }
         let heading = if room.kind == Kind::Solo {
             "lobby.solo_heading"
         } else {
@@ -190,7 +202,8 @@ impl App {
         Panel::new("seats", self.strings.get(heading), items)
     }
 
-    fn number(&self, id: &str, value: i32, range: (i32, i32), disabled: bool) -> Item {
+    /// A number field; `unsure` shows "???" in place of the value.
+    fn number(&self, id: &str, value: i32, range: (i32, i32), disabled: bool, unsure: bool) -> Item {
         Item::Number {
             id: id.into(),
             label: self.strings.get(id),
@@ -198,6 +211,11 @@ impl App {
             min: range.0 as u32,
             max: range.1 as u32,
             disabled,
+            text: if unsure {
+                self.strings.get("lobby.unknown")
+            } else {
+                String::new()
+            },
         }
     }
 
@@ -213,8 +231,12 @@ impl App {
     fn match_panel(&self, room: &Room) -> Panel {
         let host = room.is_host();
         let s = &room.lobby.settings;
+        // Defaults on fills these three, and they can't be typed
+        let filled = !host || s.defaults;
+        let unsure = room.lobby.defaults_unsure();
         let mut items = vec![
-            self.number("lobby.minutes", s.match_minutes, MINUTES, !host),
+            self.number("lobby.minutes", s.match_minutes, MINUTES, !host, false),
+            self.switch("lobby.defaults", s.defaults, !host),
             Item::Select {
                 id: "lobby.map_size".into(),
                 label: self.strings.get("lobby.map_size"),
@@ -226,31 +248,28 @@ impl App {
                         text: self.strings.get(&format!("map_size.{}", size.key())),
                     })
                     .collect(),
-                disabled: !host,
+                disabled: filled,
             },
-            self.number("lobby.sheep", s.sheep, SHEEP, !host),
+            self.number("lobby.sheep", s.sheep, SHEEP, filled, unsure),
             self.number(
                 "lobby.eats",
                 s.eats_required,
                 (EATS.0, s.sheep.min(EATS.1)),
-                !host,
+                filled,
+                unsure,
             ),
             self.switch("lobby.powerups", s.powerups, !host),
             self.switch("lobby.sudden", s.sudden_death, !host),
         ];
-        if host {
-            items.push(self.quiet("lobby.defaults", "lobby.defaults"));
-        }
-        if room.kind != Kind::Solo {
-            items.push(Item::Text {
-                id: "lobby.name".into(),
-                label: self.strings.get("lobby.name"),
-                value: self.save.name.clone(),
-                max: crate::lobby::MAX_NAME_CHARS as u32,
-                placeholder: self.strings.get("lobby.name_hint"),
+        let problem = room.lobby.start_problem();
+        if let Some(key) = problem {
+            items.push(Item::Lines {
+                id: "lobby.problem".into(),
+                lines: vec![self.strings.get(key)],
             });
         }
-        let problem = room.lobby.start_problem();
+        // Leave sits above, so Start or Ready is the last thing in the panel
+        items.push(self.quiet("lobby.leave", "lobby.leave"));
         if host {
             items.push(Item::Button {
                 id: "lobby.start".into(),
@@ -259,18 +278,14 @@ impl App {
                 disabled: problem.is_some(),
             });
         } else {
-            let me = room.lobby.seat_of(&room.client);
-            let ready =
-                me.is_some_and(|n| matches!(&room.lobby.seats[n].who, Who::Person { ready: true, .. }));
-            items.push(self.switch("lobby.ready", ready, false));
+            // the button says what pressing it does
+            let key = if room.am_ready() {
+                "lobby.not_ready"
+            } else {
+                "lobby.ready"
+            };
+            items.push(self.button("lobby.ready", key));
         }
-        if let Some(key) = problem {
-            items.push(Item::Lines {
-                id: "lobby.problem".into(),
-                lines: vec![self.strings.get(key)],
-            });
-        }
-        items.push(self.quiet("lobby.leave", "lobby.leave"));
         Panel::new("match", self.strings.get("lobby.match"), items)
     }
 
