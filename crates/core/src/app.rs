@@ -22,7 +22,7 @@ use crate::{glossary, icon, patch_notes};
 
 /// The build's version: the version button's text, and the top row of
 /// `data/patch-notes.json`. `scripts/bump.sh` changes the two together.
-pub const VERSION: &str = "0.1.5";
+pub const VERSION: &str = "0.1.6";
 
 /// The sound slider's step, percent.
 const VOLUME_STEP: u32 = 5;

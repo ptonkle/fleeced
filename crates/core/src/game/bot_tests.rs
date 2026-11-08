@@ -12,7 +12,7 @@ use crate::map::Map;
 use crate::online::{Rollback, SEATS};
 use crate::rules::carcasses::Carcass;
 use crate::rules::setup::Settings;
-use crate::rules::tune;
+use crate::rules::tune::{self, Powerup as Kind};
 
 const DOG: usize = 0;
 const WOLF: usize = 1;
@@ -152,6 +152,51 @@ fn a_crouched_wolf_keeping_pace_shows_nothing_at_any_distance() {
     let still = BodyRow { speed: 0, ..hiding };
     assert!(gives_itself_away(&still, from_int(12), true));
     assert!(!gives_itself_away(&still, from_int(12), false));
+}
+
+#[test]
+fn a_wolf_in_the_sheep_suit_passes_standing_and_running() {
+    let row = |sprinting| BodyRow {
+        seat: 1,
+        role: Role::Wolf,
+        x: 0,
+        y: 0,
+        z: 0,
+        yaw: 0,
+        pitch: 0,
+        crouched: false,
+        sprinting,
+        grounded: true,
+        speed: 2 * fx::ONE,
+        action: Action::Moving,
+        winded: false,
+        outline: false,
+        suited: true,
+        cloaked: false,
+        carrot: false,
+    };
+    // unsuited, these show within 25 m and 60 m; suited, not even at 1 m
+    assert!(!gives_itself_away(&row(false), fx::ONE, false));
+    assert!(!gives_itself_away(&row(true), fx::ONE, false));
+}
+
+#[test]
+fn a_sheepdog_bot_loses_a_wolf_that_cloaks_mid_chase() {
+    // 20 m off and stood tall, the Wolf is spotted at the first decision
+    let mut m = dog_near_held_wolf(20);
+    for _ in 0..tune::BOT_THINK_TICKS * 2 {
+        tick_with_wolf_holding(&mut m, 0);
+    }
+    assert!(m.players[DOG].brain.quarry_left > 0);
+    let slot = &mut m.players[WOLF].slot;
+    assert!(slot.take(Kind::InvisibilityCloak));
+    assert!(slot.activate().is_some());
+    // the cloak lasts 5 s; 4 s of it, stood still, and the Sheepdog never reaches it
+    for _ in 0..240 {
+        tick_with_wolf_holding(&mut m, 0);
+    }
+    assert!(!m.world.bodies[WOLF].out);
+    assert_eq!(m.players[DOG].brain.quarry_left, 0);
 }
 
 #[test]

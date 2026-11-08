@@ -57,12 +57,30 @@ const LEGS_PACE: i32 = 55;
 /// A sheep faster than this runs.
 const SHEEP_RUN: Fx = cm(520);
 
-/// A teammate's line, shown through walls.
+/// A teammate's line, shown through walls: sky blue, lighter than the Bell's.
 const TEAM_LINE: Outline = Outline {
-    color: [cm(96), cm(90), cm(66)],
+    color: [cm(30), cm(72), ONE],
     width: 2,
     through: true,
 };
+/// The other team's line, where this viewer is shown one: orange, apart from
+/// the prey's red.
+const ENEMY_LINE: Outline = Outline {
+    color: [ONE, cm(48), cm(8)],
+    width: 2,
+    through: true,
+};
+
+/// The line on another player's body for this viewer, by team.
+fn body_line(viewer: Role, row: &BodyRow) -> Option<Outline> {
+    if !row.outline {
+        None
+    } else if row.role == viewer {
+        Some(TEAM_LINE)
+    } else {
+        Some(ENEMY_LINE)
+    }
+}
 /// A Wolf's red line on the sheep it would eat. It shows only in plain view.
 const PREY_LINE: Outline = Outline {
     color: [ONE, cm(10), cm(8)],
@@ -450,7 +468,7 @@ impl Scene {
                     pose: walker.pose(model.rig(), &lib.poses),
                     coat,
                     skin,
-                    outline: (row.outline && !mine).then_some(TEAM_LINE),
+                    outline: body_line(s.me.role, row).filter(|_| !mine),
                     bell: false,
                 },
             );
@@ -865,6 +883,37 @@ mod tests {
         assert_eq!(sheep_line(&s, 4), Some(BELL_LINE));
         s.me.prey = Some(4);
         assert_eq!(sheep_line(&s, 4), Some(PREY_LINE));
+    }
+
+    #[test]
+    fn teammates_line_blue_and_the_other_team_orange() {
+        let dog = BodyRow {
+            seat: 1,
+            role: Role::Sheepdog,
+            x: 0,
+            y: 0,
+            z: 0,
+            yaw: 0,
+            pitch: 0,
+            crouched: false,
+            sprinting: false,
+            grounded: true,
+            speed: 0,
+            action: Action::Moving,
+            winded: false,
+            outline: true,
+            suited: false,
+            cloaked: false,
+            carrot: false,
+        };
+        assert_eq!(body_line(Role::Sheepdog, &dog), Some(TEAM_LINE));
+        assert_eq!(body_line(Role::Wolf, &dog), Some(ENEMY_LINE));
+        let unlined = BodyRow {
+            outline: false,
+            ..dog
+        };
+        assert_eq!(body_line(Role::Wolf, &unlined), None);
+        assert_ne!(TEAM_LINE.color, ENEMY_LINE.color);
     }
 
     #[test]

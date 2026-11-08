@@ -51,7 +51,7 @@ pub const FOLD_PER_SHEEPDOG: i32 = 60; // person: scale with Sheepdogs; number f
 pub const EAT_COOLDOWN_SECONDS: i32 = 20; // person: flat, whatever the wolf count
 pub const EAT_LOCK_SECONDS: i32 = 1; // person
 pub const SUPER_APPETITE_SPEED: i32 = 2; // person: doubles the dial's speed
-pub const WOLF_RETURN_SECONDS: i32 = 30; // person
+pub const WOLF_RETURN_SECONDS: i32 = 10; // person: "lower the cooldown on death to 10 seconds"
 pub const TUNNEL_COOLDOWN_SECONDS: i32 = 30; // person
 
 // ---- Sheepdogs ----

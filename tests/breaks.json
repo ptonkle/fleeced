@@ -1544,7 +1544,7 @@
     "file": "crates/core/src/rules/tune.rs",
     "find": "pub const WOLF_RETURN_SECONDS: i32 = 30;",
     "replace": "pub const WOLF_RETURN_SECONDS: i32 = 29;",
-    "test": "a_killed_wolf_returns_after_thirty_seconds"
+    "test": "a_killed_wolf_returns_after_ten_seconds"
   },
   {
     "name": "rules: Sudden death keeps a Wolf out",
@@ -4190,21 +4190,21 @@
     "file": "crates/core/src/game.rs",
     "find": "if player.life.alive() {\n                player.eat",
     "replace": "if true {\n                player.eat",
-    "test": "a_killed_wolf_returns_after_thirty_seconds_away_from_the_sheepdogs_with_its_dial_stopped"
+    "test": "a_killed_wolf_returns_after_ten_seconds_away_from_the_sheepdogs_with_its_dial_stopped"
   },
   {
     "name": "match: a wolf returns",
     "file": "crates/core/src/game.rs",
     "find": "if player.life.tick() {\n                self.wolf_returns(k);\n            }\n",
     "replace": "player.life.tick();\n",
-    "test": "a_killed_wolf_returns_after_thirty_seconds_away_from_the_sheepdogs_with_its_dial_stopped"
+    "test": "a_killed_wolf_returns_after_ten_seconds_away_from_the_sheepdogs_with_its_dial_stopped"
   },
   {
     "name": "match: it returns clear of dogs",
     "file": "crates/core/src/game.rs",
     "find": ".filter(|m| nearest_dog(m) >= tune::RETURN_CLEAR)",
     "replace": ".filter(|m| nearest_dog(m) < tune::RETURN_CLEAR)",
-    "test": "a_killed_wolf_returns_after_thirty_seconds_away_from_the_sheepdogs_with_its_dial_stopped"
+    "test": "a_killed_wolf_returns_after_ten_seconds_away_from_the_sheepdogs_with_its_dial_stopped"
   },
   {
     "name": "match: the far mouth",
@@ -5871,5 +5871,26 @@
     "find": "        self.settings = Settings::default();\n        self.refill();",
     "replace": "        self.settings = Settings::default();",
     "test": "defaults_puts_every_setting_back_and_fills_for_the_teams"
+  },
+  {
+    "name": "bot sight: a suited Wolf passes",
+    "file": "crates/core/src/game/bot.rs",
+    "find": "            Action::Moving if row.suited => false,\n",
+    "replace": "",
+    "test": "a_wolf_in_the_sheep_suit_passes_standing_and_running"
+  },
+  {
+    "name": "bot sight: the chase follows the true world",
+    "file": "crates/core/src/game/bot.rs",
+    "find": "        let shown = snap.bodies.iter().find(|b| b.seat == seat);",
+    "replace": "        let shown = Some(&self.world.bodies[brain.quarry as usize]).filter(|_| seat < 255);",
+    "test": "a_sheepdog_bot_loses_a_wolf_that_cloaks_mid_chase"
+  },
+  {
+    "name": "outline: the other team lines like a teammate",
+    "file": "crates/core/src/scene.rs",
+    "find": "    } else if row.role == viewer {\n        Some(TEAM_LINE)",
+    "replace": "    } else if row.role == viewer || true {\n        Some(TEAM_LINE)",
+    "test": "teammates_line_blue_and_the_other_team_orange"
   }
 ]

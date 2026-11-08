@@ -18,6 +18,7 @@ use super::{aim, Match};
 use crate::body::{Body, Input, Role, ACT, CROUCH, DISCARD, JUMP, PRIMARY, SECONDARY, SPRINT};
 use crate::fx::{self, Fx};
 use crate::ground::{Ground, FOLD_FIELD};
+use crate::rules::information;
 use crate::rules::mounds::MoundLook;
 use crate::rules::tune::{self, Powerup};
 
@@ -115,6 +116,8 @@ fn gives_itself_away(row: &BodyRow, far: Fx, just_barked: bool) -> bool {
         || match row.action {
             Action::Snapping | Action::Lunging => far <= tune::BOT_TELL_EATING,
             Action::Digging => far <= tune::BOT_TELL_RUNNING,
+            // a Wolf in the Sheep suit passes for a sheep, standing or running
+            Action::Moving if row.suited => false,
             Action::Moving if row.sprinting => far <= tune::BOT_TELL_RUNNING,
             Action::Moving => !row.crouched && far <= tune::BOT_TELL_TALL,
         }
@@ -198,8 +201,9 @@ impl Match {
     fn sheepdog_order(&self, k: usize, snap: &Snapshot, brain: &mut Brain) -> Order {
         let me = (self.world.bodies[k].x, self.world.bodies[k].z);
         self.watch_for_wolves(me, snap, brain);
-        let dealt_with = || self.chase(me, brain).or_else(|| self.check_carcass(me));
-        if let Some(order) = dealt_with().or_else(|| self.dig_near(me, snap, Pace::Run)) {
+        let chased = self.chase(me, snap, brain);
+        let dealt_with = chased.or_else(|| self.check_carcass(me));
+        if let Some(order) = dealt_with.or_else(|| self.dig_near(me, snap, Pace::Run)) {
             return order;
         }
         self.herd(k, me, snap, brain)
@@ -219,14 +223,18 @@ impl Match {
         }
     }
 
-    fn chase(&self, me: (Fx, Fx), brain: &Brain) -> Option<Order> {
+    /// After the quarry, as far as this Sheepdog's own screen shows it: a
+    /// Wolf that cloaks drops out of the snapshot, and the chase with it.
+    fn chase(&self, me: (Fx, Fx), snap: &Snapshot, brain: &mut Brain) -> Option<Order> {
         if brain.quarry_left == 0 {
             return None;
         }
-        let quarry = &self.world.bodies[brain.quarry as usize];
-        if quarry.out {
+        let seat = self.players[brain.quarry as usize].seat;
+        let shown = snap.bodies.iter().find(|b| b.seat == seat);
+        let Some(quarry) = shown.filter(|_| !self.world.bodies[brain.quarry as usize].out) else {
+            brain.quarry_left = 0;
             return None;
-        }
+        };
         Some(Order {
             go: Some(self.route(me, (quarry.x, quarry.z))),
             pace: Pace::Run,
@@ -515,7 +523,9 @@ impl Match {
             }
             Look::Body(j) => {
                 let b = &self.world.bodies[j as usize];
-                (!b.out).then_some((b.x, b.z))
+                let cloaked = self.players[j as usize].slot.running(Powerup::InvisibilityCloak);
+                let hidden = information::hidden(body.role, b.role, cloaked);
+                (!b.out && !hidden).then_some((b.x, b.z))
             }
             Look::Spot(x, z) => Some((x, z)),
         };

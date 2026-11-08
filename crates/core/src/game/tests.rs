@@ -595,12 +595,12 @@ fn a_body_is_part_of_the_checksum() {
 }
 
 #[test]
-fn a_killed_wolf_returns_after_thirty_seconds_away_from_the_sheepdogs_with_its_dial_stopped() {
+fn a_killed_wolf_returns_after_ten_seconds_away_from_the_sheepdogs_with_its_dial_stopped() {
     let mut m = at_lunge_range(107);
     lunge(&mut m);
     let dial = m.players[WOLF].eat.fraction();
-    // 30 s is 1800 ticks, the Lunge's last tick being the first of them
-    idle(&mut m, 1798);
+    // 10 s is 600 ticks, the Lunge's last tick being the first of them
+    idle(&mut m, 598);
     assert!(m.world.bodies[WOLF].out);
     assert_eq!(m.players[WOLF].eat.fraction(), dial);
     idle(&mut m, 1);

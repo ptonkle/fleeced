@@ -1,5 +1,15 @@
 [
   {
+    "version": "0.1.6",
+    "date": "2026-11-08",
+    "notes": [
+      "A killed Wolf is back in 10 seconds.",
+      "Computer Sheepdogs can no longer see an invisible Wolf.",
+      "Computer Sheepdogs are fooled by the Sheep suit.",
+      "Teammates have a blue outline, the other team orange."
+    ]
+  },
+  {
     "version": "0.1.5",
     "date": "2026-11-07",
     "notes": [

@@ -64,27 +64,27 @@ mod tests {
         let mut life = Life::default();
         assert_eq!(life.back_in(), None);
         life.kill(false);
-        assert_eq!(life.back_in(), Some(30));
-        // one tick in, 29 s and 59 ticks are left: still 30 rounded up
+        assert_eq!(life.back_in(), Some(10));
+        // one tick in, 9 s and 59 ticks are left: still 10 rounded up
         life.tick();
-        assert_eq!(life.back_in(), Some(30));
+        assert_eq!(life.back_in(), Some(10));
         for _ in 0..60 {
             life.tick();
         }
-        assert_eq!(life.back_in(), Some(29));
+        assert_eq!(life.back_in(), Some(9));
         let mut out = Life::default();
         out.kill(true);
         assert_eq!(out.back_in(), None);
     }
 
     #[test]
-    fn a_killed_wolf_returns_after_thirty_seconds() {
+    fn a_killed_wolf_returns_after_ten_seconds() {
         let mut life = Life::default();
         life.kill(false);
         assert!(!life.alive());
         assert!(!life.spectating());
-        // 30 s at 60 ticks a second is 1800 ticks
-        for _ in 0..1799 {
+        // 10 s at 60 ticks a second is 600 ticks
+        for _ in 0..599 {
             assert!(!life.tick());
         }
         assert!(life.tick());
@@ -104,7 +104,7 @@ mod tests {
     fn a_second_kill_does_not_restart_the_wait() {
         let mut life = Life::default();
         life.kill(false);
-        for _ in 0..1799 {
+        for _ in 0..599 {
             life.tick();
         }
         life.kill(false);

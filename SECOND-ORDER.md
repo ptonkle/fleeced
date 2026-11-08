@@ -718,3 +718,13 @@ Strings written: none. The panel reuses `play.sheepdogs_win`, `play.wolves_win`,
 | R1.2908 | finding | Quick check after this change. | `models/**` has no tagged rule, so `--dry-run` picks every core test: 849 ran, all pass. Browser step skipped as briefed. | `tests/tags.toml` |  | done |
 | R1.2909 | finding | Weak spots. | The Wolf reads thin and leggy upright; the Sheepdog reads better. Seven winners in two rows overlap once arms go up. A seat's Wolf can stand behind a boulder at the podium, as it did before. There is no sound or beat: dances keep their own time. |  |  | open |
 | R1.2910 | finding | Not done. | No browser check steps through the dances; shots only. The patch note waits on keep or revert. |  |  | open |
+
+## Live feedback, 2026-11-08 (R1.10200+)
+
+| # | Kind | Assumed or found | What is true | What changed | Rule | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| R1.10200 | finding | Bot Sheepdogs lose a Wolf that cloaks. | `chase` read the quarry's true spot from the world, so a Wolf spotted before it cloaked was still run down (T26). | `chase` follows the quarry's row in the bot's own snapshot and drops the chase when the row is gone; `steer` checks `information::hidden` before following a body between decisions. | `game/bot.rs chase, steer` | done |
+| R1.10201 | divergence | A Wolf in the Sheep suit and bot sight. | `gives_itself_away` ignored the suit, so a suited Wolf standing tall or sprinting was spotted like any other (T26, "check if they can see the disguised wolf"). | Suited and moving, it passes for a sheep at any distance; at a meal, digging, or unmoved after a bark it still shows. | `game/bot.rs gives_itself_away` | done |
+| R1.10202 | finding | Return after death. | 30 s; the person asked for 10 (T26). | `WOLF_RETURN_SECONDS` = 10. | `rules/tune.rs` | done |
+| R1.10203 | divergence | Nameplates and FL-7. | A plate on a hiding Wolf would give it away. Plates show only where the viewer sees that player's outline (teammates, and Sheepdogs to Wolves). | Briefed to the nameplate work. | `information::sees_outline` | open |
+| R1.10204 | divergence | Outline colors (T27). | Every player outline was one cream color. | Teammates are sky blue, lighter than the Bell's line; the other team (Sheepdogs as Wolves see them) orange, apart from the prey's red. | `scene.rs body_line` | done |
