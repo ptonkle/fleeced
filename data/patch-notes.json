@@ -1,5 +1,13 @@
 [
   {
+    "version": "0.2.0",
+    "date": "2026-11-08",
+    "notes": [
+      "New Sheepdog powerup: Decoy sheep, replacing Super jump.",
+      "New Wolf powerup: Frenzy."
+    ]
+  },
+  {
     "version": "0.1.7",
     "date": "2026-11-08",
     "notes": [

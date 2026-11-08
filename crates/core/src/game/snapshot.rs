@@ -13,7 +13,8 @@ use serde::Serialize;
 use super::{aim, Match};
 use crate::fx::{self, Fx};
 use crate::map::Map;
-use crate::rules::information::{self, in_sight, Facts, View};
+use crate::rules::decoy;
+use crate::rules::information::{self, in_sight, sheep_label, Facts, View};
 use crate::rules::outcome::Outcome;
 use crate::rules::powerups;
 use crate::rules::tune::{self, Powerup};
@@ -65,6 +66,8 @@ pub struct BodyRow {
     pub cloaked: bool,
     /// Holding out a Carrot on a stick.
     pub carrot: bool,
+    /// In a Frenzy: outlined to everyone.
+    pub frenzy: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -104,6 +107,8 @@ pub struct Running {
 /// is the reveal.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct FallenRow {
+    /// A Wolf to a Lunge, or a Sheepdog to a Frenzy.
+    pub role: Role,
     pub x: Fx,
     pub z: Fx,
     pub yaw: u16,
@@ -188,6 +193,10 @@ pub struct Snapshot {
     /// Where a Wolf's scent rises, near it and never on it.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub scents: Vec<[Fx; 2]>,
+    /// Which rows of `sheep` are Decoy sheep, by id: Sheepdogs alone get
+    /// these, and outline them.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub decoys: Vec<u16>,
     pub me: Me,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub outcome: Option<Outcome>,
@@ -216,9 +225,11 @@ impl Match {
         let sniffing = player.slot.running(Powerup::SniffSnoff);
         let aura = information::smells(player.role, sniffing);
         let body_row = |(p, b): (&super::Player, &crate::body::Body)| {
-            let outline = information::sees_outline(player.role, p.role);
+            let frenzy = p.slot.running(Powerup::Frenzy);
+            let outline = information::outlined(player.role, p.role, p.stun.running(), frenzy);
             let cloaked = p.slot.running(Powerup::InvisibilityCloak);
-            let hidden = information::hidden(player.role, p.role, cloaked);
+            let cloak_holds = information::cloak_holds(cloaked, frenzy);
+            let hidden = information::hidden(player.role, p.role, cloak_holds);
             let shown = !b.out && !hidden && (outline || in_sight(range, from, (b.x, b.z)));
             shown.then_some(BodyRow {
                 seat: p.seat,
@@ -254,13 +265,16 @@ impl Match {
                 suited: p.slot.running(Powerup::SheepSuit),
                 cloaked,
                 carrot: p.slot.running(Powerup::CarrotOnAStick),
+                frenzy,
             })
         };
+        let labels = &self.wolf_labels;
+        let label = |id: u16| sheep_label(player.role, id, labels);
         let sheep = self.world.flock.sheep.iter().enumerate();
         let sheep_row = |(i, s): (usize, &crate::flock::Sheep)| {
             let shown = !s.eaten && in_sight(range, from, (s.x, s.z));
             shown.then_some(SheepRow {
-                id: i as u16,
+                id: label(i as u16),
                 x: s.x,
                 z: s.z,
                 face_x: s.face_x,
@@ -274,14 +288,42 @@ impl Match {
                 folded: s.folded,
             })
         };
+        // a Decoy sheep is a grazing sheep standing still, row for row
+        let flock = self.world.flock.sheep.len();
+        let decoy_row = |d: &decoy::Decoy| {
+            in_sight(range, from, (d.x, d.z)).then_some(SheepRow {
+                id: label(decoy::id(flock, d.owner as usize)),
+                x: d.x,
+                z: d.z,
+                face_x: d.face_x,
+                face_z: d.face_z,
+                size: d.size,
+                fleece: d.fleece,
+                kind: d.kind,
+                speed: 0,
+                hop: 0,
+                grazing: true,
+                folded: false,
+            })
+        };
+        let mut sheep: Vec<SheepRow> = sheep.filter_map(sheep_row).collect();
+        sheep.extend(self.decoys.iter().filter_map(decoy_row));
+        // in id order, so where a row sits says nothing of what it is
+        sheep.sort_by_key(|r| r.id);
+        let decoys = self
+            .decoys
+            .iter()
+            .filter(|_| information::sees_decoys(player.role));
+        let decoys = decoys.map(|d| decoy::id(flock, d.owner as usize)).collect();
         let carcass_row = |c: &super::CarcassSpot| {
             in_sight(range, from, (c.x, c.z)).then_some(CarcassRow { x: c.x, z: c.z, aura })
         };
-        // a body by the same rule as a Wolf's: its team sees it anywhere
-        let wolves_outlined = information::sees_outline(player.role, Role::Wolf);
+        // a body by the same rule as the living: its team sees it anywhere
         let fallen_row = |f: &crate::rules::fallen::Fallen| {
-            let shown = wolves_outlined || in_sight(range, from, (f.x, f.z));
+            let outlined = information::sees_outline(player.role, f.role);
+            let shown = outlined || in_sight(range, from, (f.x, f.z));
             shown.then_some(FallenRow {
+                role: f.role,
                 x: f.x,
                 z: f.z,
                 yaw: f.yaw,
@@ -313,10 +355,11 @@ impl Match {
             mound_spots: self.mounds.iter().map(|m| [m.x, m.z]).collect(),
             bodies,
             plates,
-            sheep: sheep.filter_map(sheep_row).collect(),
+            sheep,
             carcasses: self.carcasses.iter().filter_map(carcass_row).collect(),
             fallen: self.fallen.iter().filter_map(fallen_row).collect(),
             scents,
+            decoys,
             me: self.me(k),
             outcome: self.outcome,
             view,
@@ -327,7 +370,11 @@ impl Match {
         let (player, body) = (&self.players[k], &self.world.bodies[k]);
         let wolf = player.role == Role::Wolf;
         let held = player.slot.held().map(powerups::row);
-        let mine = || self.fallen.iter().filter(|f| f.killer == player.seat);
+        // the banner and flash are a Sheepdog's, for a Wolf killed
+        let mine = || {
+            let wolves = self.fallen.iter().filter(|f| f.role == Role::Wolf);
+            wolves.filter(|f| f.killer == player.seat)
+        };
         Me {
             seat: player.seat,
             role: player.role,
@@ -354,8 +401,9 @@ impl Match {
             lunge_dial: (!wolf).then(|| player.lunge.wait_fraction()),
             target: self.target(k),
             prey: (wolf && !body.out)
-                .then(|| self.sheep_under(body, tune::EAT_REACH))
-                .flatten(),
+                .then(|| self.prey_under(body))
+                .flatten()
+                .map(|id| information::sheep_label(player.role, id, &self.wolf_labels)),
             belling: (player.slot.held() == Some(Powerup::Bell) && !body.out)
                 .then(|| self.bell_target(body))
                 .flatten(),

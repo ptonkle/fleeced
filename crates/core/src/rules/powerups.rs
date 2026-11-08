@@ -157,17 +157,6 @@ impl PowerupSlot {
     }
 }
 
-/// How high a Super jump goes, for a sheep this tall.
-pub fn super_jump_height(sheep_height: Fx) -> Fx {
-    fx::mul(fx::from_int(tune::SUPER_JUMP_SHEEP_HEIGHTS), sheep_height)
-}
-
-/// The upward speed that takes a body to a Super jump's height: v^2 = 2 g h.
-pub fn super_jump_speed() -> Fx {
-    let height = super_jump_height(tune::SUPER_JUMP_SHEEP_HEIGHT);
-    fx::sqrt(fx::mul(crate::tune::GRAVITY * 2, height))
-}
-
 /// A sprint speed under Zoomies.
 pub fn zoomies_sprint(sprint: Fx) -> Fx {
     fx::mul(sprint, fx::ratio(tune::ZOOMIES_SPRINT_PERCENT, 100))
@@ -235,6 +224,7 @@ mod tests {
             (Bone, Wolf, "bone", "Bone", Once, false),
             (Howl, Wolf, "three-wolf-moon", "Howl", Once, false),
             (Stampede, Wolf, "stampede", "Stampede", Once, false),
+            (Frenzy, Wolf, "frenzy", "Frenzy", Timer(480), false),
             (
                 CarrotOnAStick,
                 Sheepdog,
@@ -243,7 +233,7 @@ mod tests {
                 Meter(600),
                 false,
             ),
-            (SuperJump, Sheepdog, "super-jump", "Super jump", Once, false),
+            (DecoySheep, Sheepdog, "decoy-sheep", "Decoy sheep", Once, false),
             (Zoomies, Sheepdog, "zoomies", "Zoomies", Timer(600), false),
             (
                 Dognoculars,
@@ -325,6 +315,7 @@ mod tests {
             (SheepSuit, 1800),
             (Zoomies, 600),
             (SniffSnoff, 900),
+            (Frenzy, 480),
         ];
         for (kind, ticks) in timed {
             let mut slot = holding(kind);
@@ -339,7 +330,7 @@ mod tests {
 
     #[test]
     fn a_one_use_powerup_is_spent_on_activation() {
-        for kind in [Bone, Howl, Stampede, SuperJump, Bell] {
+        for kind in [Bone, Howl, Stampede, DecoySheep, Bell] {
             let mut slot = holding(kind);
             assert_eq!(slot.activate(), Some(kind));
             assert!(slot.is_free(), "{kind:?}");
@@ -475,18 +466,6 @@ mod tests {
         ticked(&mut slot, 150);
         assert_eq!(slot.running_fraction(Zoomies), 49152);
         assert_eq!(slot.running_fraction(Bell), 0);
-    }
-
-    #[test]
-    fn a_super_jump_is_five_sheep_high() {
-        // A ewe's 0.62 m is 40632 in Q16.16, and five of those is 203160
-        assert_eq!(super_jump_height(40632), 203_160);
-    }
-
-    #[test]
-    fn a_super_jump_leaves_the_ground_at_eleven_meters_a_second() {
-        // 3.1 m under 20 m/s^2: the square root of 124 is 11.14
-        assert_eq!(fx::round(super_jump_speed() * 10), 111);
     }
 
     #[test]

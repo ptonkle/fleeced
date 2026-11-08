@@ -147,11 +147,12 @@ fn zoomed_fov(fov: i32, zoom: i32) -> i32 {
 }
 
 /// The line on this sheep for this viewer. `worn_bells` and `belling` reach
-/// Sheepdogs alone (FL-7), so a Wolf sees no line of the Bell's.
+/// Sheepdogs alone (FL-7), so a Wolf sees no line of the Bell's. `decoys`
+/// too: a Sheepdog sees a Decoy sheep by the Bell's line.
 fn sheep_line(s: &Snapshot, id: u16) -> Option<Outline> {
     if s.me.prey == Some(id) {
         Some(PREY_LINE)
-    } else if s.me.belling == Some(id) || s.view.worn_bells.contains(&id) {
+    } else if s.me.belling == Some(id) || s.view.worn_bells.contains(&id) || s.decoys.contains(&id) {
         Some(BELL_LINE)
     } else {
         None
@@ -318,7 +319,8 @@ impl Scene {
             hill,
             map,
             seat,
-            sheep: (0..flock.len())
+            // a walker for every id, Decoy sheep's too: `rules::decoy`
+            sheep: (0..flock.len() + crate::tune::MAX_PLAYERS)
                 .map(|i| Walker::new(Clip::Idle, phase(i)))
                 .collect(),
             bodies: vec![Walker::new(Clip::Idle, 0); crate::online::SEATS],
@@ -535,14 +537,18 @@ impl Scene {
         }
     }
 
-    /// Wolves just killed: down on their sides, whatever they wore.
+    /// Wolves and Sheepdogs just killed: down on their sides, whatever they
+    /// wore.
     fn push_fallen(&self, b: &mut render::Batch, s: &Snapshot) {
         let field = &self.hill.scape().field;
         let lib: &Library = self.hill.library();
-        let model = Model::Wolf;
-        let (coat, skin) = character_coat(model);
-        let pose = Walker::new(Clip::Idle, 0).pose(model.rig(), &lib.poses);
         for f in &s.fallen {
+            let model = match f.role {
+                Role::Wolf => Model::Wolf,
+                Role::Sheepdog => Model::Sheepdog,
+            };
+            let (coat, skin) = character_coat(model);
+            let pose = Walker::new(Clip::Idle, 0).pose(model.rig(), &lib.poses);
             let [nx, ny, nz] = field.normal_near(f.x, f.z);
             let roll = fallen_roll(f.age);
             let lift = mul(FALLEN_LIFT, fx::ratio(roll, fx::QUARTER_TURN));
@@ -979,6 +985,7 @@ mod tests {
             suited: false,
             cloaked: false,
             carrot: false,
+            frenzy: false,
         };
         assert_eq!(body_line(Role::Sheepdog, &dog), Some(TEAM_LINE));
         assert_eq!(body_line(Role::Wolf, &dog), Some(ENEMY_LINE));
@@ -1002,6 +1009,7 @@ mod tests {
     #[test]
     fn a_kill_throws_up_fur_and_blood_and_they_land() {
         let f = |age| FallenRow {
+            role: Role::Wolf,
             x: 0,
             z: 0,
             yaw: 0,
@@ -1034,6 +1042,7 @@ mod tests {
             suited: false,
             cloaked: false,
             carrot: false,
+            frenzy: false,
         };
         assert_eq!(body_clip(&b), Clip::Idle);
         b.speed = from_int(4);

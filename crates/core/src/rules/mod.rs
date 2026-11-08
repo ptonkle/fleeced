@@ -13,6 +13,7 @@
 //! | `powerups.rs` | the slot: hold one, activate, discard, timers and meters |
 //! | `night.rs` | Howl's night and its change of light |
 //! | `bell.rs` | a Bell on a sheep |
+//! | `decoy.rs` | a Decoy sheep: where it stands, its id, and Wolves' shuffled ids |
 //! | `mounds.rs` | mounds, digging, and new mounds through the match |
 //! | `tunnels.rs` | the tunnel cooldown |
 //! | `death.rs` | a killed Wolf: back after a wait, or out |
@@ -25,6 +26,7 @@ pub mod bark;
 pub mod bell;
 pub mod carcasses;
 pub mod death;
+pub mod decoy;
 pub mod eat;
 pub mod fallen;
 pub mod information;

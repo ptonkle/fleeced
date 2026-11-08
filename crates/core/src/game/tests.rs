@@ -1169,7 +1169,8 @@ fn a_wolf_is_shown_the_sheep_it_would_eat_and_a_sheepdog_gets_no_such_target() {
     put_sheep(&mut m, 2, (x, z - from_int(2)));
     assert_eq!(snapshot(&m, WOLF).me.prey, None, "looking level, over its back");
     m.world.bodies[WOLF].pitch = LOOK_NEAR;
-    assert_eq!(snapshot(&m, WOLF).me.prey, Some(2));
+    // a Wolf's page names each sheep by the match's shuffle (`rules::decoy`)
+    assert_eq!(snapshot(&m, WOLF).me.prey, Some(m.wolf_labels[2]));
     stand(&mut m, DOG, (x, z));
     m.world.bodies[DOG].pitch = LOOK_NEAR;
     assert_eq!(snapshot(&m, DOG).me.prey, None);

@@ -73,16 +73,26 @@ fn powerup_art(id: &str) -> &'static str {
             "<path d='M19 6 Q30 8 28 22 H21 L20 16 L18 22 H11 Q10 11 19 6 Z' fill='#2b2438'/>",
             "<path d='M2 9 H10 M1 15 H8 M2 21 H7' stroke='#2b2438' stroke-width='2.4' stroke-linecap='round'/>"
         ),
+        // a wolf's head in a starburst
+        "frenzy" => concat!(
+            "<path d='M16 1 L19 7 L25 3 L24 10 L31 10 L26 15 L31 21 L24 21 L25 28 L19 24 L16 31 ",
+            "L13 24 L7 28 L8 21 L1 21 L6 15 L1 10 L8 10 L7 3 L13 7 Z' fill='#d8b23c' stroke='#2b2438' ",
+            "stroke-width='1.2' stroke-linejoin='round'/>",
+            "<path d='M10 9 L13 13 H19 L22 9 L21 18 L16 24 L11 18 Z' fill='#2b2438'/>",
+            "<circle cx='14' cy='16' r='1.1' fill='#efe6d2'/><circle cx='18' cy='16' r='1.1' fill='#efe6d2'/>"
+        ),
         "carrot-on-a-stick" => concat!(
             "<path d='M3 28 L26 4' stroke='#6b4a26' stroke-width='2.6' stroke-linecap='round'/>",
             "<path d='M26 4 V12' stroke='#2b2438' stroke-width='1.2'/>",
             "<path d='M22 12 H30 L26 29 Z' fill='#d9772b' stroke='#2b2438' stroke-width='1.2' stroke-linejoin='round'/>"
         ),
-        // up from a spring
-        "super-jump" => concat!(
-            "<path d='M16 2 L26 13 H20 V19 H12 V13 H6 Z' fill='#2b2438'/>",
-            "<path d='M8 22 L24 24 L8 26 L24 28 L8 30' fill='none' stroke='#2b2438' stroke-width='2' ",
-            "stroke-linejoin='round'/>"
+        // a sheep side on, drawn in a dashed line: not quite the real thing
+        "decoy-sheep" => concat!(
+            "<path d='M7 13 Q7 8 12 9 Q15 6 19 8 Q23 7 24 11 Q28 13 26 17 Q26 21 21 21 H11 Q6 21 7 17 Z' ",
+            "fill='#efe6d2' stroke='#2b2438' stroke-width='1.6' stroke-dasharray='3 1.6'/>",
+            "<ellipse cx='26.5' cy='13' rx='3' ry='3.6' fill='#2b2438'/>",
+            "<path d='M11 21 V28 M15 21 V28 M19 21 V28 M23 21 V28' stroke='#2b2438' stroke-width='2' ",
+            "stroke-linecap='round'/>"
         ),
         // a pawprint at speed
         "zoomies" => concat!(

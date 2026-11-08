@@ -12,6 +12,10 @@
 //!   outline. Wolves
 //!   get no sign of a worn Bell: a ringing one reaches everyone, as a sound.
 //! - Mounds: a Bone's decoy looks like any mound to Sheepdogs.
+//! - Frenzy: a Wolf in one is outlined to everyone, cloak or no.
+//! - Decoy sheep: a sheep to Wolves, whose sheep ids are shuffled so a
+//!   decoy's reads like any other; Sheepdogs see it outlined, and see a
+//!   Wolf it stunned outlined until it's free.
 //! - Sight: how far a player sees, by team and by the light.
 
 use serde::Serialize;
@@ -126,6 +130,38 @@ pub fn scoped_range(range: Fx, scoped: bool) -> Fx {
 /// Whether this viewer smells scents: a Sheepdog with Sniff Snoff running.
 pub fn smells(viewer: Role, sniffing: bool) -> bool {
     viewer == Role::Sheepdog && sniffing
+}
+
+/// What this viewer calls a sheep: a Wolf gets every id through the match's
+/// shuffle, so a Decoy sheep's id, past the flock's, reads like any other.
+pub fn sheep_label(viewer: Role, id: u16, labels: &[u16]) -> u16 {
+    match viewer {
+        Role::Wolf => labels[id as usize],
+        Role::Sheepdog => id,
+    }
+}
+
+/// Whether this viewer sees a Decoy sheep for what it is: Sheepdogs do, with
+/// an outline. To a Wolf it is a sheep.
+pub fn sees_decoys(viewer: Role) -> bool {
+    viewer == Role::Sheepdog
+}
+
+/// Whether a viewer sees this player's outline because a Decoy sheep has it
+/// stunned: Sheepdogs see a caught Wolf until it's free.
+pub fn sees_caught(viewer: Role, target: Role, stunned: bool) -> bool {
+    viewer == Role::Sheepdog && target == Role::Wolf && stunned
+}
+
+/// Whether a viewer sees a player's outline, all told: by team, a Wolf a
+/// Decoy sheep caught, and a Wolf in a Frenzy, which everyone sees.
+pub fn outlined(viewer: Role, target: Role, stunned: bool, frenzied: bool) -> bool {
+    sees_outline(viewer, target) || sees_caught(viewer, target, stunned) || frenzied
+}
+
+/// Whether a cloak still hides a Wolf: a Frenzy shows it anyway.
+pub fn cloak_holds(cloaked: bool, frenzied: bool) -> bool {
+    cloaked && !frenzied
 }
 
 /// Everything one-sided on the screen of a viewer on this team.
@@ -276,6 +312,32 @@ mod tests {
             [MoundLook::Fresh, MoundLook::Fresh]
         );
         assert_eq!(view(Wolf, &facts).mounds, [MoundLook::Decoy, MoundLook::Fresh]);
+    }
+
+    #[test]
+    fn a_wolf_gets_shuffled_sheep_ids_and_a_sheepdog_the_real_ones() {
+        let labels = [2, 0, 1];
+        assert_eq!(sheep_label(Wolf, 0, &labels), 2);
+        assert_eq!(sheep_label(Sheepdog, 0, &labels), 0);
+    }
+
+    #[test]
+    fn only_sheepdogs_see_a_decoy_sheep_and_a_wolf_it_caught() {
+        assert!(sees_decoys(Sheepdog));
+        assert!(!sees_decoys(Wolf));
+        assert!(sees_caught(Sheepdog, Wolf, true));
+        assert!(!sees_caught(Sheepdog, Wolf, false));
+        assert!(!sees_caught(Wolf, Wolf, true));
+        assert!(!sees_caught(Sheepdog, Sheepdog, true), "a Bone's stun");
+    }
+
+    #[test]
+    fn everyone_sees_a_wolf_in_a_frenzy_even_cloaked() {
+        assert!(outlined(Sheepdog, Wolf, false, true));
+        assert!(!outlined(Sheepdog, Wolf, false, false));
+        assert!(outlined(Sheepdog, Wolf, true, false), "caught");
+        assert!(!cloak_holds(true, true));
+        assert!(cloak_holds(true, false));
     }
 
     #[test]

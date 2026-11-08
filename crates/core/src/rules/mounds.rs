@@ -231,7 +231,7 @@ impl MoundClock {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::rules::tune::Powerup::{Bone, Howl, Stampede, Zoomies};
+    use crate::rules::tune::Powerup::{Bone, Frenzy, Howl, Zoomies};
 
     #[test]
     fn planting_a_bone_finishes_on_its_180th_tick_and_going_on_is_what_counts() {
@@ -308,16 +308,17 @@ mod tests {
 
     #[test]
     fn a_new_mound_draws_one_powerup_for_each_team_from_the_seed() {
-        // Worked out with a separate SplitMix64: below(6) gives 5, then 2.
-        // The sixth Wolf row is Stampede and the third Sheepdog row is Zoomies.
+        // Worked out with a separate SplitMix64: below(7) gives 6, then
+        // below(6) gives 2. The seventh Wolf row is Frenzy and the third
+        // Sheepdog row is Zoomies.
         let drawn = Mound::drawn(&mut Rng::new(0));
-        assert_eq!(drawn, Mound::buried(Stampede, Zoomies));
+        assert_eq!(drawn, Mound::buried(Frenzy, Zoomies));
         assert_ne!(drawn, Mound::buried(Bone, Zoomies));
     }
 
     #[test]
     fn every_powerup_a_team_has_can_come_out_of_a_mound() {
-        // 600 draws at equal odds of one in six is about 100 of each
+        // 600 draws at equal odds of one in seven is about 86 of each
         let mut rng = Rng::new(7);
         let mut seen = [0u32; POWERUPS.len()];
         for _ in 0..600 {

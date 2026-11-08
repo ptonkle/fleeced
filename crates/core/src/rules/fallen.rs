@@ -5,6 +5,7 @@
 //! which is `death.rs`.
 
 use super::tune;
+use super::Role;
 use crate::fx::{self, Fx};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -12,8 +13,10 @@ pub struct Fallen {
     pub x: Fx,
     pub z: Fx,
     pub yaw: u16,
-    /// The seat of the Sheepdog who made the kill.
+    /// The seat of the player who made the kill.
     pub killer: u8,
+    /// Who died: a Wolf to a Lunge, or a Sheepdog to a Frenzy.
+    pub role: Role,
     age: i32,
 }
 
@@ -24,7 +27,16 @@ impl Fallen {
             z,
             yaw,
             killer,
+            role: Role::Wolf,
             age: 0,
+        }
+    }
+
+    /// A Sheepdog killed by a Wolf in a Frenzy.
+    pub fn sheepdog(x: Fx, z: Fx, yaw: u16, killer: u8) -> Fallen {
+        Fallen {
+            role: Role::Sheepdog,
+            ..Fallen::new(x, z, yaw, killer)
         }
     }
 
@@ -39,9 +51,9 @@ impl Fallen {
         self.age >= tune::KILL_BODY_TICKS
     }
 
-    /// Whether the Sheepdogs' screens still show this kill.
+    /// Whether the Sheepdogs' screens still show this kill: a Wolf's alone.
     pub fn news(&self) -> bool {
-        self.age < tune::KILL_NEWS_TICKS
+        self.role == Role::Wolf && self.age < tune::KILL_NEWS_TICKS
     }
 
     /// The killer's flash: 1 at the kill, fading to 0.

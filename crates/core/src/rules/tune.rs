@@ -110,8 +110,9 @@ pub const HOWL_CHANGE_SECONDS: i32 = 3; // person
 pub const STAMPEDE_REACH: Fx = from_int(15); // person: about 15 m
 pub const BELL_REACH: Fx = from_int(20); // person: "way farther, like 20m at least"
 pub const BELL_RING_SECONDS: i32 = 10; // person: about 10 s
-pub const SUPER_JUMP_SHEEP_HEIGHTS: i32 = 5; // person
-pub const SUPER_JUMP_SHEEP_HEIGHT: Fx = from_int(31) / 50; // contract: a ewe's 0.62 m
+pub const DECOY_STUN_SECONDS: i32 = 5; // agent: the coordinator's number for a Wolf that bites a Decoy sheep
+pub const DECOY_AHEAD: Fx = from_int(2); // agent: how far ahead of the Sheepdog a Decoy sheep stands
+pub const FRENZY_CONTACT: Fx = from_int(3) / 2; // agent: a Wolf in a Frenzy kills a Sheepdog this near, body to body
 pub const DOGNOCULARS_ZOOM_MIN: i32 = 3; // person
 pub const DOGNOCULARS_ZOOM_MAX: i32 = 10; // person
 pub const DOGNOCULARS_ZOOM_STEP: i32 = 1; // stub: one wheel notch
@@ -178,6 +179,9 @@ pub const BOT_LEAVE_BEHIND: i32 = 3; // agent: a field with this few left isn't 
 // How a Wolf bot stays hidden.
 pub const BOT_FLEE_REACH: Fx = from_int(4); // agent: a Sheepdog this near sends it running; more and none is ever caught (R1.1806)
 pub const BOT_FLEE_RUN: i32 = 20; // agent: meters a flight aims ahead
+pub const BOT_FRENZY_REACH: Fx = from_int(15); // coordinator: a Wolf bot holding Frenzy uses it on a Sheepdog this near
+pub const BOT_FRENZY_CHASE: Fx = from_int(40); // agent: a Wolf bot in a Frenzy runs at a Sheepdog this near
+pub const BOT_FRENZY_FLEE: Fx = from_int(30); // agent: a Sheepdog bot runs from a Wolf in a Frenzy this near
 pub const BOT_HIDE_REACH: Fx = from_int(30); // agent: crouched with a Sheepdog this near
 pub const BOT_EAT_SAFE: Fx = from_int(25); // agent: no meal with a Sheepdog this near
 pub const BOT_EAT_FROM: Fx = from_int(5) / 2; // agent: within `EAT_REACH`
@@ -248,8 +252,9 @@ powerup_table! {
     Bone,              Wolf,     "bone",               "Bone",               Usage::Once,            false;
     Howl,              Wolf,     "three-wolf-moon",    "Howl",               Usage::Once,            false;
     Stampede,          Wolf,     "stampede",           "Stampede",           Usage::Once,            false;
+    Frenzy,            Wolf,     "frenzy",             "Frenzy",             Usage::Timer(secs(8)),  false;
     CarrotOnAStick,    Sheepdog, "carrot-on-a-stick",  "Carrot on a stick",  Usage::Meter(secs(10)), false;
-    SuperJump,         Sheepdog, "super-jump",         "Super jump",         Usage::Once,            false;
+    DecoySheep,        Sheepdog, "decoy-sheep",        "Decoy sheep",        Usage::Once,            false;
     Zoomies,           Sheepdog, "zoomies",            "Zoomies",            Usage::Timer(secs(10)), false;
     Dognoculars,       Sheepdog, "dognoculars",        "Dognoculars",        Usage::Meter(secs(10)), false;
     SniffSnoff,        Sheepdog, "sniff-snoff",        "Sniff Snoff",        Usage::Timer(secs(15)), false;

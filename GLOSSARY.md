@@ -55,6 +55,9 @@ Not: sneak, duck
 ### Defaults
 
 A lobby checkbox, on at first. While on, Number of sheep, Eats required and Map size follow the players seated, and show ??? until Random roles settle. Off, the host types them.
+### Decoy sheep
+
+A Sheepdog powerup: a fake sheep that grazes where it's put. Sheepdogs see its outline. A Wolf that bites it eats nothing and is stunned.
 
 ### Dig
 
@@ -93,6 +96,10 @@ Not: pen, corral, goal, fank, enclosure
 ### Fold target
 
 How many sheep must reach the Fold for the Sheepdogs to win.
+
+### Frenzy
+
+A Wolf powerup: for a while, the Wolf kills any Sheepdog it touches and can't be killed. Everyone sees its outline.
 
 ### Gap
 
@@ -201,10 +208,6 @@ A match setting. A killed Wolf stays out, and the Sheepdogs win when the last Wo
 ### Super appetite
 
 A Wolf powerup that runs the eat cooldown at double speed for a while.
-
-### Super jump
-
-A Sheepdog powerup: one very high jump.
 
 ### Tunnel
 

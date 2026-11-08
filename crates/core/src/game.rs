@@ -32,7 +32,8 @@
 //! | Invisibility cloak | | `information::hidden`, in `Match::snapshot_for` |
 //! | Sheep suit | | `BodyRow::suited`: the costume, seen by all |
 //! | Carrot on a stick | | `Match::run_powerups`: `Flock::lure` and `Body::calm` |
-//! | Super jump | in the air | `Match::use_powerup`: `powerups::super_jump_speed` |
+//! | Frenzy | | `Match::frenzy_kills`, `Match::run_lunge` misses, `information::outlined` |
+//! | Decoy sheep | this Sheepdog has one out | `Match::put_decoy`, `Match::bite_decoy`, `Snapshot::decoys` |
 //! | Zoomies | | `Match::run_powerups`: `Body::sprint_scale` and stamina |
 //! | Dognoculars | | `Facts::scoped`, `Match::spot_carcasses`, and the page's zoom |
 
@@ -62,6 +63,7 @@ use crate::rules::bark::BarkCooldown;
 use crate::rules::bell::Bell;
 use crate::rules::carcasses::{Carcass, CarcassTally};
 use crate::rules::death::Life;
+use crate::rules::decoy::{self, Decoy};
 use crate::rules::eat::EatDial;
 use crate::rules::fallen::Fallen;
 use crate::rules::lunge::Lunge;
@@ -84,6 +86,10 @@ const DIG_SOUND_TICKS: u32 = 30;
 
 /// Keeps a match's own dice apart from the map's on the same seed.
 const DICE: u64 = 0x5eed_0f5e_ed0f_5eed;
+
+/// The dice for Wolves' sheep ids, apart from the match's, so drawing them
+/// changes no other roll.
+const LABEL_DICE: u64 = 0x1abe_15de_c0de_5eed;
 
 /// The page's movement keys, above `Input`'s buttons. The page sends bits and
 /// `input_from_keys` turns them into one `Input`.
@@ -186,6 +192,11 @@ pub struct Match {
     fallen: Vec<Fallen>,
     tally: CarcassTally,
     bells: Vec<Bell>,
+    /// Decoy sheep on the ground, at most one a Sheepdog.
+    decoys: Vec<Decoy>,
+    /// What a Wolf's page calls each sheep id, real or decoy: see `decoy.rs`.
+    /// Drawn from the seed, so it's no part of the checksum.
+    wolf_labels: Arc<[u16]>,
     night: Night,
     mound_clock: MoundClock,
     /// The next of the map's spare mounds to come up.
@@ -310,6 +321,8 @@ impl Match {
                 mound: Mound::drawn(&mut rng),
             })
             .collect();
+        let ids = flock.sheep.len() + MAX_PLAYERS;
+        let wolf_labels = decoy::labels(ids, &mut Rng::new(start.seed ^ LABEL_DICE)).into();
         Match {
             world: World::new(bodies, flock),
             players,
@@ -319,6 +332,8 @@ impl Match {
             fallen: Vec::new(),
             tally: CarcassTally::default(),
             bells: Vec::new(),
+            decoys: Vec::new(),
+            wolf_labels,
             night: Night::default(),
             mound_clock: MoundClock::new(powerups, seats),
             next_spare: 0,
@@ -630,18 +645,42 @@ impl Match {
         sheep.filter_map(under).min().map(|(_, i)| i as u16)
     }
 
+    /// What a Wolf's bite would land on: the nearest sheep or Decoy sheep
+    /// under the crosshair, by id (`decoy::id` for a decoy).
+    fn prey_under(&self, body: &Body) -> Option<u16> {
+        let n = self.world.flock.sheep.len();
+        let sheep = self.sheep_under(body, tune::EAT_REACH).map(|i| {
+            let s = &self.world.flock.sheep[i as usize];
+            (aimed(&self.map, body, s.x, s.z, tune::EAT_REACH), i)
+        });
+        let decoys = self.decoys.iter().map(|d| {
+            let id = decoy::id(n, d.owner as usize);
+            (aimed(&self.map, body, d.x, d.z, tune::EAT_REACH), id)
+        });
+        let near = sheep
+            .into_iter()
+            .chain(decoys)
+            .filter_map(|(d, i)| d.map(|d| (d, i)));
+        near.min().map(|(_, i)| i)
+    }
+
     fn try_eat(&mut self, k: usize, body: &Body) {
         if !self.players[k].eat.ready() {
             return;
         }
-        let Some(sheep) = self.sheep_under(body, tune::EAT_REACH) else {
+        let Some(sheep) = self.prey_under(body) else {
             return;
         };
         let now = self.world.tick;
         let player = &mut self.players[k];
+        // a bite at a decoy spends the dial and breaks a cloak like any bite
         player.eat.eat(now as i32);
         player.slot.ate();
         self.world.bodies[k].locked_until = player.eat.lock_ends() as u32;
+        if let Some(owner) = decoy::owner_of(sheep, self.world.flock.sheep.len()) {
+            self.bite_decoy(k, owner);
+            return;
+        }
         let flock = &mut self.world.flock;
         flock.eat(sheep as usize);
         let eaten = &flock.sheep[sheep as usize];
@@ -677,18 +716,74 @@ impl Match {
                 self.noise("stampede", k);
             }
             Powerup::SniffSnoff => self.draw_scents(),
-            Powerup::SuperJump => {
-                if !body.grounded {
+            Powerup::DecoySheep => {
+                if self.decoys.iter().any(|d| d.owner as usize == k) {
                     return;
                 }
-                let body = &mut self.world.bodies[k];
-                body.vy = powerups::super_jump_speed();
-                body.grounded = false;
+                self.put_decoy(k, body);
             }
             _ => {}
         }
         self.players[k].slot.activate();
         self.noise("powerup_activate", k);
+    }
+
+    /// The id behind a Wolf's label: for a Wolf bot to steer by, never to
+    /// decide by.
+    fn unlabel(&self, label: u16) -> u16 {
+        let at = self.wolf_labels.iter().position(|l| *l == label);
+        at.expect("every label names an id") as u16
+    }
+
+    /// Where a sheep or Decoy sheep is, by id, while it's still there.
+    fn sheep_at(&self, id: u16) -> Option<(Fx, Fx)> {
+        let flock = &self.world.flock.sheep;
+        match decoy::owner_of(id, flock.len()) {
+            None => {
+                let s = &flock[id as usize];
+                (!s.eaten).then_some((s.x, s.z))
+            }
+            Some(owner) => {
+                let d = self.decoys.iter().find(|d| d.owner as usize == owner);
+                d.map(|d| (d.x, d.z))
+            }
+        }
+    }
+
+    /// A Decoy sheep goes down just ahead of this Sheepdog, looking like the
+    /// real sheep nearest it.
+    fn put_decoy(&mut self, k: usize, body: &Body) {
+        let (x, z) = decoy::spot(body.x, body.z, body.yaw);
+        let like = self.world.flock.sheep.iter().filter(|s| !s.eaten);
+        let like = like.min_by_key(|s| fx::length(s.x - x, s.z - z));
+        let (size, fleece, kind) = like.map_or((fx::ONE, 0, crate::flock::Kind::Ewe), |s| {
+            (s.size, s.fleece, s.kind)
+        });
+        let radius = fx::mul(crate::tune::SHEEP_RADIUS, size);
+        let (x, z) = self.map.push_out(x, z, radius);
+        let (s, c) = (fx::sin(body.yaw as i32), fx::cos(body.yaw as i32));
+        self.decoys.push(Decoy {
+            owner: k as u8,
+            x,
+            z,
+            face_x: s,
+            face_z: -c,
+            size,
+            fleece,
+            kind,
+        });
+    }
+
+    /// A Wolf bit this Sheepdog's Decoy sheep: no eat, the decoy is gone, and
+    /// the Wolf is stunned, its outline showing to Sheepdogs till it's free.
+    fn bite_decoy(&mut self, k: usize, owner: usize) {
+        self.decoys.retain(|d| d.owner as usize != owner);
+        let ticks = secs(tune::DECOY_STUN_SECONDS);
+        let player = &mut self.players[k];
+        player.stun.start(ticks);
+        player.slot.release();
+        self.world.bodies[k].locked_until = self.world.tick + ticks as u32;
+        self.noise("wolf_eat", k);
     }
 
     /// The sheep a Bell would go on: under the crosshair, and wearing none.
@@ -785,9 +880,13 @@ impl Match {
                 player.eat.tick(player.slot.running(Powerup::SuperAppetite));
             }
             if player.life.tick() {
-                self.wolf_returns(k);
+                match player.role {
+                    Role::Wolf => self.wolf_returns(k),
+                    Role::Sheepdog => self.sheepdog_returns(k),
+                }
             }
         }
+        self.frenzy_kills();
         self.night.tick();
         self.ring_bells();
         self.spot_carcasses();
@@ -824,7 +923,13 @@ impl Match {
             let (p, b) = (&self.players[*j], &self.world.bodies[*j]);
             let (dx, dz) = (b.x - x, b.z - z);
             let close = dx.abs() <= tune::LUNGE_CONTACT && dz.abs() <= tune::LUNGE_CONTACT;
-            p.role == Role::Wolf && p.life.alive() && close && fx::length(dx, dz) <= tune::LUNGE_CONTACT
+            // a Wolf in a Frenzy can't be killed: the Lunge goes through it
+            let frenzied = p.slot.running(Powerup::Frenzy);
+            p.role == Role::Wolf
+                && p.life.alive()
+                && !frenzied
+                && close
+                && fx::length(dx, dz) <= tune::LUNGE_CONTACT
         };
         match (0..self.players.len()).find(touching) {
             Some(wolf) => {
@@ -840,15 +945,45 @@ impl Match {
         }
     }
 
-    /// A Wolf dies, and what it held goes with it. Its body lies where it fell.
+    /// Every Wolf in a Frenzy kills each Sheepdog its body touches.
+    fn frenzy_kills(&mut self) {
+        for w in 0..self.players.len() {
+            let (p, b) = (&self.players[w], &self.world.bodies[w]);
+            if p.role != Role::Wolf || b.out || !p.slot.running(Powerup::Frenzy) {
+                continue;
+            }
+            let (x, z) = (b.x, b.z);
+            let touching = |j: &usize| {
+                let (p, b) = (&self.players[*j], &self.world.bodies[*j]);
+                let (dx, dz) = (b.x - x, b.z - z);
+                let close = dx.abs() <= tune::FRENZY_CONTACT && dz.abs() <= tune::FRENZY_CONTACT;
+                let dog = p.role == Role::Sheepdog && p.life.alive() && !b.out;
+                dog && close && fx::length(dx, dz) <= tune::FRENZY_CONTACT
+            };
+            let hit: Vec<usize> = (0..self.players.len()).filter(touching).collect();
+            for dog in hit {
+                self.noise("lunge_hit", w);
+                self.kill(dog, w);
+            }
+        }
+    }
+
+    /// A Wolf dies to a Lunge, or a Sheepdog to a Frenzy, and what it held
+    /// goes with it. Its body lies where it fell.
     fn kill(&mut self, k: usize, killer: usize) {
         let (body, seat) = (&self.world.bodies[k], self.players[killer].seat);
-        self.fallen.push(Fallen::new(body.x, body.z, body.yaw, seat));
+        let role = self.players[k].role;
+        self.fallen.push(match role {
+            Role::Wolf => Fallen::new(body.x, body.z, body.yaw, seat),
+            Role::Sheepdog => Fallen::sheepdog(body.x, body.z, body.yaw, seat),
+        });
         let player = &mut self.players[k];
-        player.life.kill(self.goals.sudden_death);
+        // Sudden death is about Wolves: a Sheepdog always comes back
+        player.life.kill(self.goals.sudden_death && role == Role::Wolf);
         player.slot = PowerupSlot::default();
         player.digging = Digging::default();
         player.planting = Planting::default();
+        player.lunge = Lunge::default();
         let body = &mut self.world.bodies[k];
         body.out = true;
         body.crouched = false;
@@ -857,29 +992,42 @@ impl Match {
     /// A Wolf back from the dead comes out of a random mouth away from every
     /// Sheepdog, or the mouth farthest from them when none is.
     fn wolf_returns(&mut self, k: usize) {
-        let dogs: Vec<(Fx, Fx)> = self
+        let mouths = self.map.mouths().to_vec();
+        self.comes_back(k, &mouths, Role::Sheepdog);
+    }
+
+    /// A Sheepdog back from a Frenzy comes back at a Sheepdog start away from
+    /// every Wolf, or the one farthest from them when none is.
+    fn sheepdog_returns(&mut self, k: usize) {
+        let starts = self.map.sheepdog_starts.clone();
+        self.comes_back(k, &starts, Role::Wolf);
+    }
+
+    /// Back from the dead at a random one of these spots clear of the other
+    /// team, or the one farthest from it when none is.
+    fn comes_back(&mut self, k: usize, spots: &[(Fx, Fx)], foe: Role) {
+        let foes: Vec<(Fx, Fx)> = self
             .players
             .iter()
             .zip(&self.world.bodies)
-            .filter(|(p, _)| p.role == Role::Sheepdog)
+            .filter(|(p, _)| p.role == foe)
             .map(|(_, b)| (b.x, b.z))
             .collect();
-        let nearest_dog = |m: &(Fx, Fx)| {
-            let far = dogs.iter().map(|d| fx::length(d.0 - m.0, d.1 - m.1));
+        let nearest_foe = |m: &(Fx, Fx)| {
+            let far = foes.iter().map(|d| fx::length(d.0 - m.0, d.1 - m.1));
             far.min().unwrap_or(Fx::MAX)
         };
-        let mouths = self.map.mouths();
-        let clear: Vec<(Fx, Fx)> = mouths
+        let clear: Vec<(Fx, Fx)> = spots
             .iter()
             .copied()
-            .filter(|m| nearest_dog(m) >= tune::RETURN_CLEAR)
+            .filter(|m| nearest_foe(m) >= tune::RETURN_CLEAR)
             .collect();
         let (x, z) = if clear.is_empty() {
-            mouths
+            spots
                 .iter()
                 .copied()
-                .max_by_key(nearest_dog)
-                .expect("a map has mouths")
+                .max_by_key(nearest_foe)
+                .expect("a map has spots to come back at")
         } else {
             clear[self.rng.below(clear.len() as u32) as usize]
         };
@@ -994,6 +1142,7 @@ impl Rollback for Match {
         self.fallen.hash(&mut h);
         self.tally.hash(&mut h);
         self.bells.hash(&mut h);
+        self.decoys.hash(&mut h);
         self.night.hash(&mut h);
         self.mound_clock.hash(&mut h);
         self.next_spare.hash(&mut h);

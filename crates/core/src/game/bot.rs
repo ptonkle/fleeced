@@ -105,6 +105,13 @@ fn dot(a: (Fx, Fx), b: (Fx, Fx)) -> i64 {
     a.0 as i64 * b.0 as i64 + a.1 as i64 * b.1 as i64
 }
 
+/// The nearest Sheepdog on this snapshot, and how far it is.
+fn nearest_dog(me: (Fx, Fx), snap: &Snapshot) -> Option<(&BodyRow, Fx)> {
+    let dogs = snap.bodies.iter().filter(|b| b.role == Role::Sheepdog);
+    dogs.map(|b| (b, apart(me, (b.x, b.z))))
+        .min_by_key(|(_, far)| *far)
+}
+
 /// Whether a Sheepdog at this distance can tell this body isn't a sheep.
 /// Everything here is on a person's screen: a tall back, a run no sheep
 /// makes, a Wolf at its meal, and just after a bark, something that didn't
@@ -152,11 +159,17 @@ impl Match {
         let plant = self.players[k].slot.held() == Some(Powerup::Bone)
             && order.pace != Pace::Run
             && self.bone_spot(&body).is_some();
+        // a Frenzy waits for a Sheepdog in reach
+        let me = (body.x, body.z);
+        let saving = self.players[k].slot.held() == Some(Powerup::Frenzy)
+            && nearest_dog(me, &snap).is_none_or(|(_, far)| far > tune::BOT_FRENZY_REACH);
         let order = if plant {
             Order {
                 hold: SECONDARY,
                 ..Order::default()
             }
+        } else if saving {
+            order
         } else {
             brain.spend_powerup(&snap, order)
         };
@@ -200,6 +213,22 @@ impl Match {
 
     fn sheepdog_order(&self, k: usize, snap: &Snapshot, brain: &mut Brain) -> Order {
         let me = (self.world.bodies[k].x, self.world.bodies[k].z);
+        let frenzied = snap.bodies.iter().filter(|b| b.role == Role::Wolf && b.frenzy);
+        let near = frenzied
+            .map(|b| (b, apart(me, (b.x, b.z))))
+            .filter(|(_, far)| *far <= tune::BOT_FRENZY_FLEE);
+        if let Some((wolf, _)) = near.min_by_key(|(_, far)| *far) {
+            let away = unit(me.0 - wolf.x, me.1 - wolf.z).unwrap_or((fx::ONE, 0));
+            let far = (
+                me.0 + away.0 * tune::BOT_FLEE_RUN,
+                me.1 + away.1 * tune::BOT_FLEE_RUN,
+            );
+            return Order {
+                go: Some(self.clear_spot(far)),
+                pace: Pace::Run,
+                ..Order::default()
+            };
+        }
         self.watch_for_wolves(me, snap, brain);
         let chased = self.chase(me, snap, brain);
         let dealt_with = chased.or_else(|| self.check_carcass(me));
@@ -297,9 +326,11 @@ impl Match {
         let share = |z: Fx| ((z as i64 * team) / width).clamp(0, team - 1);
         let sheep = &self.world.flock.sheep;
         let field_of = |r: &SheepRow| sheep[r.id as usize].field as usize;
+        // a Decoy sheep of the team's is no sheep to herd
         let free = || {
             snap.sheep
                 .iter()
+                .filter(|r| !snap.decoys.contains(&r.id))
                 .filter(|r| !r.folded && field_of(r) < FOLD_FIELD as usize)
         };
         let (mut in_share, mut in_all) = ([0; FOLD_FIELD as usize], [0; FOLD_FIELD as usize]);
@@ -424,6 +455,18 @@ impl Match {
         let dogs = snap.bodies.iter().filter(|b| b.role == Role::Sheepdog);
         let nearest = dogs.min_by_key(|b| apart(me, (b.x, b.z)));
         let danger = nearest.map_or(Fx::MAX, |b| apart(me, (b.x, b.z)));
+        // in a Frenzy, run the nearest Sheepdog down
+        let frenzied = self.players[k].slot.running(Powerup::Frenzy);
+        if let Some(dog) = nearest.filter(|_| frenzied && danger <= tune::BOT_FRENZY_CHASE) {
+            if let Some(j) = self.index_of(dog.seat as usize) {
+                return Order {
+                    go: Some(self.route(me, (dog.x, dog.z))),
+                    pace: Pace::Run,
+                    look: Look::Body(j as u8),
+                    ..Order::default()
+                };
+            }
+        }
         if let Some(dog) = nearest.filter(|_| danger < tune::BOT_FLEE_REACH) {
             return self.flee(k, me, (dog.x, dog.z));
         }
@@ -438,15 +481,16 @@ impl Match {
                 return order;
             }
         }
-        let sheep = &self.world.flock.sheep;
         let by_last_meal = |r: &SheepRow| {
             let meal = brain.last_meal.filter(|_| !hungry);
             meal.is_some_and(|m| apart(m, (r.x, r.z)) < tune::BOT_MOVE_ON)
         };
+        // the field from where the row stands: a Wolf's ids are shuffled, and
+        // a Decoy sheep is a sheep to it
         let free = snap
             .sheep
             .iter()
-            .filter(|r| !r.folded && sheep[r.id as usize].field != FOLD_FIELD);
+            .filter(|r| !r.folded && self.map.field(r.x, r.z) != FOLD_FIELD);
         let Some(prey) = free
             .filter(|r| !by_last_meal(r))
             .min_by_key(|r| apart(me, (r.x, r.z)))
@@ -463,7 +507,7 @@ impl Match {
             brain.ate_at = snap.tick;
             return Order {
                 pace,
-                look: Look::Sheep(prey.id),
+                look: Look::Sheep(self.unlabel(prey.id)),
                 press: PRIMARY,
                 ..Order::default()
             };
@@ -517,10 +561,7 @@ impl Match {
         let me = (body.x, body.z);
         let target = match order.look {
             Look::Ahead => None,
-            Look::Sheep(id) => {
-                let s = &self.world.flock.sheep[id as usize];
-                (!s.eaten).then_some((s.x, s.z))
-            }
+            Look::Sheep(id) => self.sheep_at(id),
             Look::Body(j) => {
                 let b = &self.world.bodies[j as usize];
                 let cloaked = self.players[j as usize].slot.running(Powerup::InvisibilityCloak);

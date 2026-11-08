@@ -1274,13 +1274,6 @@
     "test": "the_hud_reads_what_is_held_and_what_is_running"
   },
   {
-    "name": "rules: a Super jump is five sheep high",
-    "file": "crates/core/src/rules/tune.rs",
-    "find": "pub const SUPER_JUMP_SHEEP_HEIGHTS: i32 = 5;",
-    "replace": "pub const SUPER_JUMP_SHEEP_HEIGHTS: i32 = 4;",
-    "test": "a_super_jump_is_five_sheep_high"
-  },
-  {
     "name": "rules: Zoomies add a quarter to a sprint",
     "file": "crates/core/src/rules/tune.rs",
     "find": "pub const ZOOMIES_SPRINT_PERCENT: i32 = 175;",
@@ -4809,27 +4802,6 @@
     "test": "a_carrot_draws_sheep_and_stops_scaring_them_only_while_it_is_held_out"
   },
   {
-    "name": "power14: a super jump lifts",
-    "file": "crates/core/src/game.rs",
-    "find": "body.vy = powerups::super_jump_speed();",
-    "replace": "body.vy = tune::SUPER_JUMP_SHEEP_HEIGHT;",
-    "test": "a_super_jump_goes_about_five_sheep_high_once"
-  },
-  {
-    "name": "power14: a super jump's speed",
-    "file": "crates/core/src/rules/powerups.rs",
-    "find": "fx::sqrt(fx::mul(crate::tune::GRAVITY * 2, height))",
-    "replace": "fx::sqrt(fx::mul(crate::tune::GRAVITY, height))",
-    "test": "a_super_jump_leaves_the_ground_at_eleven_meters_a_second"
-  },
-  {
-    "name": "power14: a super jump waits for the ground",
-    "file": "crates/core/src/game.rs",
-    "find": "                if !body.grounded {\n                    return;\n                }\n",
-    "replace": "",
-    "test": "a_super_jump_waits_for_the_ground"
-  },
-  {
     "name": "power14: zoomies fill the bar",
     "file": "crates/core/src/game.rs",
     "find": "body.stamina = STAMINA_FULL;",
@@ -5979,5 +5951,138 @@
     "find": "            .filter(|b| s.plates.contains(&b.seat))\n",
     "replace": "",
     "test": "a_plate_names_the_sheepdog_ahead_of_a_wolf_and_none_names_the_wolf"
+  },
+  {
+    "name": "decoy sheep: it stands ahead",
+    "file": "crates/core/src/rules/decoy.rs",
+    "find": "        z - fx::mul(c, tune::DECOY_AHEAD),",
+    "replace": "        z + fx::mul(c, tune::DECOY_AHEAD),",
+    "test": "a_decoy_stands_two_meters_ahead"
+  },
+  {
+    "name": "decoy sheep: its id is past the flock",
+    "file": "crates/core/src/rules/decoy.rs",
+    "find": "(id as usize).checked_sub(flock)",
+    "replace": "(id as usize).checked_sub(flock + 1)",
+    "test": "a_decoys_id_is_past_the_flock_and_names_its_owner"
+  },
+  {
+    "name": "decoy sheep: each id gets its own label",
+    "file": "crates/core/src/rules/decoy.rs",
+    "find": "        out.swap(i, j);",
+    "replace": "        out[i] = out[j];",
+    "test": "every_id_gets_a_label_of_its_own"
+  },
+  {
+    "name": "decoy sheep: a Wolf gets shuffled ids",
+    "file": "crates/core/src/rules/information.rs",
+    "find": "        Role::Wolf => labels[id as usize],",
+    "replace": "        Role::Wolf => id,",
+    "test": "a_wolf_gets_shuffled_sheep_ids_and_a_sheepdog_the_real_ones"
+  },
+  {
+    "name": "decoy sheep: only Sheepdogs see a caught Wolf",
+    "file": "crates/core/src/rules/information.rs",
+    "find": "    viewer == Role::Sheepdog && target == Role::Wolf && stunned",
+    "replace": "    target == Role::Wolf && stunned",
+    "test": "only_sheepdogs_see_a_decoy_sheep_and_a_wolf_it_caught"
+  },
+  {
+    "name": "decoy sheep: one at a time",
+    "file": "crates/core/src/game.rs",
+    "find": "                if self.decoys.iter().any(|d| d.owner as usize == k) {",
+    "replace": "                if false {",
+    "test": "a_decoy_sheep_goes_down_ahead_and_a_second_waits_for_it"
+  },
+  {
+    "name": "decoy sheep: a bite stuns and counts no eat",
+    "file": "crates/core/src/game.rs",
+    "find": "            self.bite_decoy(k, owner);\n            return;\n",
+    "replace": "            self.bite_decoy(k, owner);\n",
+    "test": "a_wolf_that_bites_a_decoy_sheep_eats_nothing_and_is_stunned_five_seconds"
+  },
+  {
+    "name": "decoy sheep: the stun is five seconds",
+    "file": "crates/core/src/rules/tune.rs",
+    "find": "pub const DECOY_STUN_SECONDS: i32 = 5;",
+    "replace": "pub const DECOY_STUN_SECONDS: i32 = 4;",
+    "test": "a_wolf_that_bites_a_decoy_sheep_eats_nothing_and_is_stunned_five_seconds"
+  },
+  {
+    "name": "decoy sheep: rows in id order",
+    "file": "crates/core/src/game/snapshot.rs",
+    "find": "        sheep.sort_by_key(|r| r.id);\n",
+    "replace": "",
+    "test": "a_decoy_sheep_is_a_sheep_to_a_wolf_and_outlined_to_a_sheepdog"
+  },
+  {
+    "name": "decoy sheep: a caught Wolf is outlined",
+    "file": "crates/core/src/game/snapshot.rs",
+    "find": "let outline = information::sees_outline(player.role, p.role) || caught;",
+    "replace": "let outline = information::sees_outline(player.role, p.role) && caught;",
+    "test": "a_wolf_a_decoy_sheep_caught_is_outlined_to_sheepdogs_while_stunned"
+  },
+  {
+    "name": "frenzy: a touch kills a Sheepdog",
+    "file": "crates/core/src/game.rs",
+    "find": "        self.frenzy_kills();\n",
+    "replace": "",
+    "test": "a_wolf_in_a_frenzy_kills_a_sheepdog_it_touches"
+  },
+  {
+    "name": "frenzy: only within touch",
+    "file": "crates/core/src/rules/tune.rs",
+    "find": "pub const FRENZY_CONTACT: Fx = from_int(3) / 2;",
+    "replace": "pub const FRENZY_CONTACT: Fx = from_int(4);",
+    "test": "a_wolf_in_a_frenzy_kills_no_sheepdog_out_of_touch"
+  },
+  {
+    "name": "frenzy: a dead Sheepdog is no Wolf kill",
+    "file": "crates/core/src/rules/fallen.rs",
+    "find": "        self.role == Role::Wolf && self.age < tune::KILL_NEWS_TICKS",
+    "replace": "        self.age < tune::KILL_NEWS_TICKS",
+    "test": "a_wolf_in_a_frenzy_kills_a_sheepdog_it_touches"
+  },
+  {
+    "name": "frenzy: eight seconds",
+    "file": "crates/core/src/rules/tune.rs",
+    "find": "\"Frenzy\",             Usage::Timer(secs(8)),",
+    "replace": "\"Frenzy\",             Usage::Timer(secs(9)),",
+    "test": "a_frenzy_lasts_eight_seconds"
+  },
+  {
+    "name": "frenzy: a Lunge goes through",
+    "file": "crates/core/src/game.rs",
+    "find": "                && !frenzied\n",
+    "replace": "",
+    "test": "a_lunge_goes_through_a_wolf_in_a_frenzy"
+  },
+  {
+    "name": "frenzy: a Sheepdog comes back in Sudden death",
+    "file": "crates/core/src/game.rs",
+    "find": "player.life.kill(self.goals.sudden_death && role == Role::Wolf);",
+    "replace": "player.life.kill(self.goals.sudden_death);",
+    "test": "a_sheepdog_killed_in_a_frenzy_returns_after_ten_seconds_away_from_wolves_even_in_sudden_death"
+  },
+  {
+    "name": "frenzy: everyone sees the outline",
+    "file": "crates/core/src/rules/information.rs",
+    "find": "sees_outline(viewer, target) || sees_caught(viewer, target, stunned) || frenzied",
+    "replace": "sees_outline(viewer, target) || sees_caught(viewer, target, stunned)",
+    "test": "everyone_sees_a_wolf_in_a_frenzy_even_cloaked"
+  },
+  {
+    "name": "frenzy: a cloak doesn't hide it",
+    "file": "crates/core/src/game/snapshot.rs",
+    "find": "let hidden = information::hidden(player.role, p.role, cloak_holds);",
+    "replace": "let hidden = information::hidden(player.role, p.role, cloaked || !cloak_holds);",
+    "test": "everyone_sees_a_wolf_in_a_frenzy_through_its_cloak"
+  },
+  {
+    "name": "frenzy: a Wolf bot saves it",
+    "file": "crates/core/src/game/bot.rs",
+    "find": "        } else if saving {\n            order\n",
+    "replace": "        } else if false {\n            order\n",
+    "test": "a_wolf_bot_saves_a_frenzy_for_a_sheepdog_within_fifteen_meters"
   }
 ]

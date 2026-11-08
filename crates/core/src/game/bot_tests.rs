@@ -130,6 +130,7 @@ fn a_crouched_wolf_keeping_pace_shows_nothing_at_any_distance() {
         suited: false,
         cloaked: false,
         carrot: false,
+        frenzy: false,
     };
     let hiding = row(true, false, Action::Moving);
     assert!(!gives_itself_away(&hiding, fx::ONE, false));
@@ -174,6 +175,7 @@ fn a_wolf_in_the_sheep_suit_passes_standing_and_running() {
         suited: true,
         cloaked: false,
         carrot: false,
+        frenzy: false,
     };
     // unsuited, these show within 25 m and 60 m; suited, not even at 1 m
     assert!(!gives_itself_away(&row(false), fx::ONE, false));
@@ -338,4 +340,28 @@ fn bots_play_on_a_small_map_and_stay_inside_its_walls() {
     for s in &m.world.flock.sheep {
         assert!(map.inside(s.x, s.z));
     }
+}
+
+#[test]
+fn a_wolf_bot_saves_a_frenzy_for_a_sheepdog_within_fifteen_meters() {
+    let mut m = dog_near_held_wolf(20);
+    m.players[WOLF].slot.take(Kind::Frenzy);
+    // the Sheepdog held by a person, standing still
+    let still = |m: &mut Match| {
+        let mut keys = [None; SEATS];
+        keys[DOG] = Some(Input::default());
+        m.step(&keys);
+    };
+    // two decisions at 20 m: still held
+    for _ in 0..50 {
+        still(&mut m);
+    }
+    assert_eq!(m.players[WOLF].slot.held(), Some(Kind::Frenzy));
+    let wolf = m.world.bodies[WOLF];
+    m.world.bodies[DOG].x = wolf.x - from_int(10);
+    m.world.bodies[DOG].z = wolf.z;
+    for _ in 0..50 {
+        still(&mut m);
+    }
+    assert!(m.players[WOLF].slot.running(Kind::Frenzy));
 }
